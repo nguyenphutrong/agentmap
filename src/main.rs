@@ -1,10 +1,14 @@
 use anyhow::{Context, Result};
+use chrono::Utc;
 use clap::Parser;
 use std::fs;
 
 use agentmap::analyze::{extract_imports, extract_memory_markers, extract_symbols, FileGraph};
 use agentmap::cli::Args;
-use agentmap::emit::{write_outputs, OutputBundle};
+use agentmap::emit::{
+    write_outputs, CriticalFile, DiffInfo, HubFile, JsonOutput, LargeFileEntry, OutputBundle,
+    ProjectInfo,
+};
 use agentmap::generate::{
     detect_entry_points, generate_agents_md, generate_memory, generate_outline, get_critical_files,
     AgentsConfig,
@@ -19,7 +23,7 @@ fn main() -> Result<()> {
         .map_err(|e| anyhow::anyhow!(e))
         .context("Invalid arguments")?;
 
-    if args.verbosity() > 0 {
+    if args.verbosity() > 0 && !args.json {
         eprintln!("Scanning: {}", args.path.display());
     }
 
@@ -34,7 +38,7 @@ fn main() -> Result<()> {
                 .or_else(|| get_default_branch(&args.path))
                 .unwrap_or_else(|| "main".to_string());
 
-            if args.verbosity() > 0 {
+            if args.verbosity() > 0 && !args.json {
                 eprintln!("  Diff mode: comparing against {}", base_ref_owned);
             }
             get_diff_files(&args.path, &base_ref_owned)
@@ -59,7 +63,7 @@ fn main() -> Result<()> {
         files
     };
 
-    if args.verbosity() > 0 {
+    if args.verbosity() > 0 && !args.json {
         eprintln!("  Files scanned: {}", files.len());
     }
 
@@ -85,7 +89,7 @@ fn main() -> Result<()> {
         }
     }
 
-    if args.verbosity() > 0 {
+    if args.verbosity() > 0 && !args.json {
         eprintln!(
             "  Large files (>{} lines): {}",
             args.threshold,
@@ -102,7 +106,7 @@ fn main() -> Result<()> {
     let large_files_refs: Vec<_> = large_file_symbols.iter().map(|(f, _)| f.clone()).collect();
     let hub_files = file_graph.hub_files();
 
-    if args.verbosity() > 0 {
+    if args.verbosity() > 0 && !args.json {
         eprintln!("  Hub files (3+ importers): {}", hub_files.len());
     }
 
@@ -126,6 +130,51 @@ fn main() -> Result<()> {
     };
 
     let agents_md = generate_agents_md(&agents_config);
+
+    if args.json {
+        let json_output = JsonOutput {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            generated_at: Utc::now(),
+            project: ProjectInfo {
+                path: args.path.display().to_string(),
+                files_scanned: files.len(),
+                large_files_count: large_file_symbols.len(),
+                memory_markers_count: all_memory.len(),
+            },
+            files: files.clone(),
+            large_files: large_file_symbols
+                .iter()
+                .map(|(f, syms)| LargeFileEntry {
+                    path: f.relative_path.clone(),
+                    line_count: f.line_count,
+                    language: format!("{:?}", f.language),
+                    symbols: syms.clone(),
+                })
+                .collect(),
+            memory: all_memory.clone(),
+            entry_points: entry_points.clone(),
+            critical_files: critical_files
+                .iter()
+                .map(|(path, count)| CriticalFile {
+                    path: path.clone(),
+                    high_priority_markers: *count,
+                })
+                .collect(),
+            hub_files: hub_files
+                .iter()
+                .map(|(path, count)| HubFile {
+                    path: path.clone(),
+                    imported_by: *count,
+                })
+                .collect(),
+            diff: diff_stats.as_ref().map(|stats| DiffInfo {
+                base_ref: diff_base_ref.clone(),
+                files: stats.clone(),
+            }),
+        };
+        println!("{}", json_output.to_json());
+        return Ok(());
+    }
 
     let bundle = OutputBundle {
         outline,

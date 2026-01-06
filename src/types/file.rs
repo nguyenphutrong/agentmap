@@ -1,6 +1,7 @@
+use serde::Serialize;
 use std::path::PathBuf;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
 pub enum Language {
     Rust,
     Python,
@@ -59,8 +60,9 @@ impl Language {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct FileEntry {
+    #[serde(skip)]
     pub path: PathBuf,
     pub relative_path: String,
     pub extension: Option<String>,

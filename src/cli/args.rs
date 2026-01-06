@@ -38,6 +38,9 @@ pub struct Args {
 
     #[arg(long, value_name = "REF")]
     pub diff: Option<String>,
+
+    #[arg(long, default_value = "false")]
+    pub json: bool,
 }
 
 impl Args {

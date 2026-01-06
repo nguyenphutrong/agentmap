@@ -1,4 +1,6 @@
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+use serde::Serialize;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 pub enum Priority {
     High,
     Medium,
@@ -15,7 +17,7 @@ impl std::fmt::Display for Priority {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub enum MemoryKind {
     Warning,
     BusinessRule,
@@ -77,7 +79,7 @@ impl std::fmt::Display for MemoryKind {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct MemoryEntry {
     pub kind: MemoryKind,
     pub content: String,

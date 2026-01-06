@@ -1,8 +1,9 @@
+use serde::Serialize;
 use std::collections::HashMap;
 use std::path::Path;
 use std::process::Command;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct DiffStat {
     pub path: String,
     pub status: DiffStatus,
@@ -10,7 +11,7 @@ pub struct DiffStat {
     pub deletions: usize,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize)]
 pub enum DiffStatus {
     Added,
     Modified,

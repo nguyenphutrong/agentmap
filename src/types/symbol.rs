@@ -1,4 +1,6 @@
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+use serde::Serialize;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub enum SymbolKind {
     Function,
     Method,
@@ -29,7 +31,7 @@ impl std::fmt::Display for SymbolKind {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub enum Visibility {
     Public,
     Private,
@@ -48,7 +50,7 @@ impl std::fmt::Display for Visibility {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub struct LineRange {
     pub start: usize,
     pub end: usize,
@@ -67,7 +69,7 @@ impl LineRange {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Symbol {
     pub kind: SymbolKind,
     pub name: String,
