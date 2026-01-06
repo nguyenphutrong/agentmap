@@ -12,18 +12,25 @@ pub fn scan_directory(
     root: &Path,
     threshold: usize,
     respect_gitignore: bool,
+    max_depth: Option<usize>,
 ) -> Result<Vec<FileEntry>> {
     let mut entries = Vec::new();
     let root = root
         .canonicalize()
         .context("Failed to canonicalize root path")?;
 
-    let walker = WalkBuilder::new(&root)
+    let mut builder = WalkBuilder::new(&root);
+    builder
         .hidden(true)
         .git_ignore(respect_gitignore)
         .git_global(respect_gitignore)
-        .git_exclude(respect_gitignore)
-        .build();
+        .git_exclude(respect_gitignore);
+
+    if let Some(depth) = max_depth {
+        builder.max_depth(Some(depth));
+    }
+
+    let walker = builder.build();
 
     for result in walker {
         let entry = match result {

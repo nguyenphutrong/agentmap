@@ -41,6 +41,9 @@ pub struct Args {
 
     #[arg(long, default_value = "false")]
     pub json: bool,
+
+    #[arg(short = 'd', long, default_value = "0")]
+    pub depth: usize,
 }
 
 impl Args {

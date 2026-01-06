@@ -51,7 +51,13 @@ fn main() -> Result<()> {
         .as_ref()
         .map(|stats| stats.iter().map(|s| s.path.clone()).collect());
 
-    let files = scan_directory(&args.path, args.threshold, !args.no_gitignore)
+    let max_depth = if args.depth > 0 {
+        Some(args.depth)
+    } else {
+        None
+    };
+
+    let files = scan_directory(&args.path, args.threshold, !args.no_gitignore, max_depth)
         .context("Failed to scan directory")?;
 
     let files: Vec<_> = if let Some(ref diff_set) = diff_file_set {
