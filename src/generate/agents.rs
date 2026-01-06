@@ -1,15 +1,43 @@
+use crate::scan::DiffStat;
 use crate::types::FileEntry;
 
-pub fn generate_agents_md(
-    large_files: &[FileEntry],
-    critical_files: &[(String, usize)],
-    entry_points: &[String],
-    hub_files: &[(String, usize)],
-) -> String {
+pub struct AgentsConfig<'a> {
+    pub large_files: &'a [FileEntry],
+    pub critical_files: &'a [(String, usize)],
+    pub entry_points: &'a [String],
+    pub hub_files: &'a [(String, usize)],
+    pub diff_stats: Option<&'a [DiffStat]>,
+    pub diff_base: Option<&'a str>,
+}
+
+pub fn generate_agents_md(config: &AgentsConfig) -> String {
     let mut output = String::new();
 
     output.push_str("# AGENTS.md\n\n");
     output.push_str("Instructions for AI agents working with this codebase.\n\n");
+
+    if let (Some(stats), Some(base)) = (config.diff_stats, config.diff_base) {
+        if !stats.is_empty() {
+            output.push_str(&format!("## Changes vs `{}`\n\n", base));
+            output.push_str("Files changed in this branch:\n\n");
+            output.push_str("| File | Status | Changes |\n");
+            output.push_str("| ---- | ------ | ------- |\n");
+            for stat in stats {
+                let changes = if stat.additions > 0 || stat.deletions > 0 {
+                    format!("+{} -{}", stat.additions, stat.deletions)
+                } else {
+                    "-".to_string()
+                };
+                output.push_str(&format!(
+                    "| `{}` | {} | {} |\n",
+                    stat.path,
+                    stat.status.as_str(),
+                    changes
+                ));
+            }
+            output.push_str("\n---\n\n");
+        }
+    }
 
     output.push_str("## Reading Protocol\n\n");
     output.push_str("**MUST**:\n");
@@ -29,23 +57,23 @@ pub fn generate_agents_md(
 
     output.push_str("---\n\n");
 
-    if !entry_points.is_empty() {
+    if !config.entry_points.is_empty() {
         output.push_str("## Entry Points\n\n");
         output.push_str("Start reading the codebase from these files:\n\n");
-        for ep in entry_points {
+        for ep in config.entry_points {
             output.push_str(&format!("- `{}`\n", ep));
         }
         output.push_str("\n");
     }
 
-    if !large_files.is_empty() {
+    if !config.large_files.is_empty() {
         output.push_str("## Large Files (Consult outline.md)\n\n");
         output.push_str(
             "These files exceed the line threshold. Use `outline.md` for symbol maps:\n\n",
         );
         output.push_str("| File | Lines | Language |\n");
         output.push_str("| ---- | ----- | -------- |\n");
-        for f in large_files {
+        for f in config.large_files {
             output.push_str(&format!(
                 "| `{}` | {} | {:?} |\n",
                 f.relative_path, f.line_count, f.language
@@ -54,25 +82,25 @@ pub fn generate_agents_md(
         output.push_str("\n");
     }
 
-    if !critical_files.is_empty() {
+    if !config.critical_files.is_empty() {
         output.push_str("## Critical Files (Review memory.md First)\n\n");
         output.push_str("These files contain high-priority warnings or business rules:\n\n");
         output.push_str("| File | High-Priority Markers |\n");
         output.push_str("| ---- | --------------------- |\n");
-        for (path, count) in critical_files {
+        for (path, count) in config.critical_files {
             output.push_str(&format!("| `{}` | {} |\n", path, count));
         }
         output.push_str("\n");
     }
 
-    if !hub_files.is_empty() {
+    if !config.hub_files.is_empty() {
         output.push_str("## Hub Files (High Import Count)\n\n");
         output.push_str(
             "These files are imported by many others. Changes here have wide impact:\n\n",
         );
         output.push_str("| File | Imported By |\n");
         output.push_str("| ---- | ----------- |\n");
-        for (path, count) in hub_files {
+        for (path, count) in config.hub_files {
             output.push_str(&format!("| `{}` | {} files |\n", path, count));
         }
         output.push_str("\n");
@@ -144,7 +172,15 @@ mod tests {
 
     #[test]
     fn test_empty_agents_md() {
-        let result = generate_agents_md(&[], &[], &[], &[]);
+        let config = AgentsConfig {
+            large_files: &[],
+            critical_files: &[],
+            entry_points: &[],
+            hub_files: &[],
+            diff_stats: None,
+            diff_base: None,
+        };
+        let result = generate_agents_md(&config);
         assert!(result.contains("# AGENTS.md"));
         assert!(result.contains("Reading Protocol"));
     }
@@ -152,7 +188,15 @@ mod tests {
     #[test]
     fn test_with_large_files() {
         let large = vec![make_file("src/big.rs", 1000)];
-        let result = generate_agents_md(&large, &[], &[], &[]);
+        let config = AgentsConfig {
+            large_files: &large,
+            critical_files: &[],
+            entry_points: &[],
+            hub_files: &[],
+            diff_stats: None,
+            diff_base: None,
+        };
+        let result = generate_agents_md(&config);
         assert!(result.contains("Large Files"));
         assert!(result.contains("src/big.rs"));
     }
@@ -163,10 +207,50 @@ mod tests {
             ("src/utils.rs".to_string(), 5),
             ("src/types.rs".to_string(), 3),
         ];
-        let result = generate_agents_md(&[], &[], &[], &hubs);
+        let config = AgentsConfig {
+            large_files: &[],
+            critical_files: &[],
+            entry_points: &[],
+            hub_files: &hubs,
+            diff_stats: None,
+            diff_base: None,
+        };
+        let result = generate_agents_md(&config);
         assert!(result.contains("Hub Files"));
         assert!(result.contains("src/utils.rs"));
         assert!(result.contains("5 files"));
+    }
+
+    #[test]
+    fn test_with_diff_stats() {
+        use crate::scan::DiffStatus;
+        let stats = vec![
+            DiffStat {
+                path: "src/new.rs".to_string(),
+                status: DiffStatus::Added,
+                additions: 100,
+                deletions: 0,
+            },
+            DiffStat {
+                path: "src/old.rs".to_string(),
+                status: DiffStatus::Modified,
+                additions: 10,
+                deletions: 5,
+            },
+        ];
+        let config = AgentsConfig {
+            large_files: &[],
+            critical_files: &[],
+            entry_points: &[],
+            hub_files: &[],
+            diff_stats: Some(&stats),
+            diff_base: Some("main"),
+        };
+        let result = generate_agents_md(&config);
+        assert!(result.contains("Changes vs `main`"));
+        assert!(result.contains("src/new.rs"));
+        assert!(result.contains("+100 -0"));
+        assert!(result.contains("new"));
     }
 
     #[test]

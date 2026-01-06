@@ -35,6 +35,9 @@ pub struct Args {
 
     #[arg(short, long, default_value = "false")]
     pub quiet: bool,
+
+    #[arg(long, value_name = "REF")]
+    pub diff: Option<String>,
 }
 
 impl Args {

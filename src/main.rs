@@ -7,8 +7,9 @@ use agentmap::cli::Args;
 use agentmap::emit::{write_outputs, OutputBundle};
 use agentmap::generate::{
     detect_entry_points, generate_agents_md, generate_memory, generate_outline, get_critical_files,
+    AgentsConfig,
 };
-use agentmap::scan::scan_directory;
+use agentmap::scan::{get_default_branch, get_diff_files, is_git_repo, scan_directory, DiffStat};
 use agentmap::types::{FileEntry, MemoryEntry, Symbol};
 
 fn main() -> Result<()> {
@@ -22,8 +23,41 @@ fn main() -> Result<()> {
         eprintln!("Scanning: {}", args.path.display());
     }
 
+    let diff_stats: Option<Vec<DiffStat>> = if args.diff.is_some() {
+        if !is_git_repo(&args.path) {
+            eprintln!("Warning: --diff requires a git repository, ignoring flag");
+            None
+        } else {
+            let base_ref_owned = args
+                .diff
+                .clone()
+                .or_else(|| get_default_branch(&args.path))
+                .unwrap_or_else(|| "main".to_string());
+
+            if args.verbosity() > 0 {
+                eprintln!("  Diff mode: comparing against {}", base_ref_owned);
+            }
+            get_diff_files(&args.path, &base_ref_owned)
+        }
+    } else {
+        None
+    };
+
+    let diff_file_set: Option<std::collections::HashSet<String>> = diff_stats
+        .as_ref()
+        .map(|stats| stats.iter().map(|s| s.path.clone()).collect());
+
     let files = scan_directory(&args.path, args.threshold, !args.no_gitignore)
         .context("Failed to scan directory")?;
+
+    let files: Vec<_> = if let Some(ref diff_set) = diff_file_set {
+        files
+            .into_iter()
+            .filter(|f| diff_set.contains(&f.relative_path))
+            .collect()
+    } else {
+        files
+    };
 
     if args.verbosity() > 0 {
         eprintln!("  Files scanned: {}", files.len());
@@ -72,12 +106,26 @@ fn main() -> Result<()> {
         eprintln!("  Hub files (3+ importers): {}", hub_files.len());
     }
 
-    let agents_md = generate_agents_md(
-        &large_files_refs,
-        &critical_files,
-        &entry_points,
-        &hub_files,
-    );
+    let diff_base_ref = args
+        .diff
+        .clone()
+        .or_else(|| get_default_branch(&args.path))
+        .unwrap_or_else(|| "main".to_string());
+
+    let agents_config = AgentsConfig {
+        large_files: &large_files_refs,
+        critical_files: &critical_files,
+        entry_points: &entry_points,
+        hub_files: &hub_files,
+        diff_stats: diff_stats.as_deref(),
+        diff_base: if diff_stats.is_some() {
+            Some(diff_base_ref.as_str())
+        } else {
+            None
+        },
+    };
+
+    let agents_md = generate_agents_md(&agents_config);
 
     let bundle = OutputBundle {
         outline,
