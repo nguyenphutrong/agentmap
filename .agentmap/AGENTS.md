@@ -36,8 +36,8 @@ These files are imported by many others. Changes here have wide impact:
 | ---- | ----------- |
 | `types` | 22 files |
 | `analyze` | 15 files |
-| `once_cell` | 13 files |
 | `regex` | 13 files |
+| `once_cell` | 13 files |
 | `std` | 11 files |
 | `super` | 6 files |
 | `serde` | 5 files |
