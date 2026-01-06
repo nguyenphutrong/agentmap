@@ -1,88 +1,28 @@
 use anyhow::{Context, Result};
-use chrono::Utc;
-use clap::Parser;
 use std::collections::HashMap;
 use std::fs;
+use std::path::Path;
 
-use agentmap::analyze::{
-    detect_modules, extract_imports, extract_memory_markers, extract_symbols, FileGraph, ModuleInfo,
+use crate::analyze::{
+    detect_modules, extract_imports, extract_memory_markers, extract_symbols, FileGraph,
 };
-use agentmap::cli::{run_update, run_watch, Args, Command};
-use agentmap::emit::{
-    calculate_module_state, current_timestamp, write_hierarchical, CriticalFile, DiffInfo,
-    HierarchicalOutput, HubFile, JsonOutput, LargeFileEntry, Manifest, ModuleOutput, ProjectInfo,
+use crate::cli::Args;
+use crate::emit::{
+    calculate_module_state, current_timestamp, write_hierarchical, HierarchicalOutput, Manifest,
 };
-use agentmap::generate::{
+use crate::generate::{
     detect_entry_points, file_path_to_slug, generate_file_doc, generate_index_md,
-    generate_module_content, get_critical_files, is_complex_file, IndexConfig,
+    generate_module_content, is_complex_file, IndexConfig,
 };
-use agentmap::scan::{
-    cleanup_temp, clone_to_temp, get_default_branch, get_diff_files, is_git_repo, scan_directory,
-    DiffStat,
-};
-use agentmap::types::{FileEntry, MemoryEntry, Symbol};
+use crate::scan::{get_default_branch, get_diff_files, is_git_repo, scan_directory};
+use crate::types::{FileEntry, MemoryEntry, Symbol};
 
-fn main() -> Result<()> {
-    let args = Args::parse();
-
-    match &args.command {
-        Some(Command::Update) => return run_update(),
-        Some(Command::Watch { debounce }) => return run_watch(&args, *debounce),
-        None => {}
-    }
-
-    args.validate()
-        .map_err(|e| anyhow::anyhow!(e))
-        .context("Invalid arguments")?;
-
-    let (work_path, temp_dir) = if args.is_remote() {
-        let url = args.path.to_string_lossy().to_string();
-        if args.verbosity() > 0 && !args.json {
-            eprintln!("Cloning remote repository: {}", url);
-        }
-        let temp = clone_to_temp(&url).context("Failed to clone remote repository")?;
-        (temp.clone(), Some(temp))
-    } else {
-        (args.path.clone(), None)
-    };
-
-    let result = run_analysis(&args, &work_path);
-
-    if let Some(ref temp) = temp_dir {
-        cleanup_temp(temp);
-    }
-
-    result
-}
-
-fn run_analysis(args: &Args, work_path: &std::path::Path) -> Result<()> {
+pub fn run_analysis(args: &Args, work_path: &Path) -> Result<()> {
     if args.verbosity() > 0 && !args.json {
         eprintln!("Scanning: {}", work_path.display());
     }
 
-    let diff_stats: Option<Vec<DiffStat>> = if args.diff.is_some() {
-        if !is_git_repo(work_path) {
-            eprintln!("Warning: --diff requires a git repository, ignoring flag");
-            None
-        } else {
-            let base_ref_owned = args
-                .diff
-                .clone()
-                .or_else(|| get_default_branch(work_path))
-                .unwrap_or_else(|| "main".to_string());
-
-            if args.verbosity() > 0 && !args.json {
-                eprintln!("  Diff mode: comparing against {}", base_ref_owned);
-            }
-            get_diff_files(work_path, &base_ref_owned)
-        }
-    } else {
-        None
-    };
-
-    let diff_file_set: Option<std::collections::HashSet<String>> = diff_stats
-        .as_ref()
-        .map(|stats| stats.iter().map(|s| s.path.clone()).collect());
+    let diff_file_set = get_diff_file_set(args, work_path);
 
     let max_depth = if args.depth > 0 {
         Some(args.depth)
@@ -106,12 +46,79 @@ fn run_analysis(args: &Args, work_path: &std::path::Path) -> Result<()> {
         eprintln!("  Files scanned: {}", files.len());
     }
 
+    let (all_memory, all_symbols, large_file_symbols, file_graph) = analyze_files(&files)?;
+
+    if args.verbosity() > 0 && !args.json {
+        eprintln!(
+            "  Large files (>{} lines): {}",
+            args.threshold,
+            large_file_symbols.len()
+        );
+        eprintln!("  Memory markers found: {}", all_memory.len());
+    }
+
+    let entry_points = detect_entry_points(&files);
+    let hub_files = file_graph.hub_files();
+
+    if args.verbosity() > 0 && !args.json {
+        eprintln!("  Hub files (3+ importers): {}", hub_files.len());
+    }
+
+    let output_path = if args.output.is_absolute() {
+        args.output.clone()
+    } else {
+        work_path.join(&args.output)
+    };
+
+    run_hierarchical_output(
+        args,
+        &output_path,
+        &files,
+        &all_symbols,
+        &all_memory,
+        &file_graph,
+        &entry_points,
+        &hub_files,
+    )
+}
+
+fn get_diff_file_set(args: &Args, work_path: &Path) -> Option<std::collections::HashSet<String>> {
+    if args.diff.is_none() {
+        return None;
+    }
+
+    if !is_git_repo(work_path) {
+        eprintln!("Warning: --diff requires a git repository, ignoring flag");
+        return None;
+    }
+
+    let base_ref = args
+        .diff
+        .clone()
+        .or_else(|| get_default_branch(work_path))
+        .unwrap_or_else(|| "main".to_string());
+
+    if args.verbosity() > 0 && !args.json {
+        eprintln!("  Diff mode: comparing against {}", base_ref);
+    }
+
+    get_diff_files(work_path, &base_ref).map(|stats| stats.iter().map(|s| s.path.clone()).collect())
+}
+
+fn analyze_files(
+    files: &[FileEntry],
+) -> Result<(
+    Vec<MemoryEntry>,
+    HashMap<String, Vec<Symbol>>,
+    Vec<(FileEntry, Vec<Symbol>)>,
+    FileGraph,
+)> {
     let mut all_memory: Vec<MemoryEntry> = Vec::new();
     let mut all_symbols: HashMap<String, Vec<Symbol>> = HashMap::new();
     let mut large_file_symbols: Vec<(FileEntry, Vec<Symbol>)> = Vec::new();
     let mut file_graph = FileGraph::new();
 
-    for file in &files {
+    for file in files {
         let content = match fs::read_to_string(&file.path) {
             Ok(c) => c,
             Err(_) => continue,
@@ -131,132 +138,13 @@ fn run_analysis(args: &Args, work_path: &std::path::Path) -> Result<()> {
         }
     }
 
-    if args.verbosity() > 0 && !args.json {
-        eprintln!(
-            "  Large files (>{} lines): {}",
-            args.threshold,
-            large_file_symbols.len()
-        );
-        eprintln!("  Memory markers found: {}", all_memory.len());
-    }
-
-    let entry_points = detect_entry_points(&files);
-    let hub_files = file_graph.hub_files();
-
-    if args.verbosity() > 0 && !args.json {
-        eprintln!("  Hub files (3+ importers): {}", hub_files.len());
-    }
-
-    let diff_base_ref = args
-        .diff
-        .clone()
-        .or_else(|| get_default_branch(work_path))
-        .unwrap_or_else(|| "main".to_string());
-
-    let modules = detect_modules(&files);
-
-    if args.json {
-        return run_json_output(
-            work_path,
-            &files,
-            &modules,
-            &large_file_symbols,
-            &all_memory,
-            &entry_points,
-            &hub_files,
-            diff_stats.as_ref(),
-            &diff_base_ref,
-        );
-    }
-
-    let output_path = if args.output.is_absolute() {
-        args.output.clone()
-    } else {
-        work_path.join(&args.output)
-    };
-
-    run_hierarchical_output(
-        args,
-        work_path,
-        &output_path,
-        &files,
-        &all_symbols,
-        &all_memory,
-        &file_graph,
-        &entry_points,
-        &hub_files,
-    )
-}
-
-#[allow(clippy::too_many_arguments)]
-fn run_json_output(
-    work_path: &std::path::Path,
-    files: &[FileEntry],
-    modules: &[ModuleInfo],
-    large_file_symbols: &[(FileEntry, Vec<Symbol>)],
-    all_memory: &[MemoryEntry],
-    entry_points: &[String],
-    hub_files: &[(String, usize)],
-    diff_stats: Option<&Vec<DiffStat>>,
-    diff_base_ref: &str,
-) -> Result<()> {
-    let critical_files = get_critical_files(all_memory);
-    let module_outputs: Vec<ModuleOutput> = modules
-        .iter()
-        .map(|m| ModuleOutput::from_module_info(m, all_memory, large_file_symbols, hub_files))
-        .collect();
-
-    let json_output = JsonOutput {
-        version: env!("CARGO_PKG_VERSION").to_string(),
-        generated_at: Utc::now(),
-        project: ProjectInfo {
-            path: work_path.display().to_string(),
-            files_scanned: files.len(),
-            large_files_count: large_file_symbols.len(),
-            memory_markers_count: all_memory.len(),
-            modules_count: modules.len(),
-        },
-        modules: module_outputs,
-        files: files.to_vec(),
-        large_files: large_file_symbols
-            .iter()
-            .map(|(f, syms)| LargeFileEntry {
-                path: f.relative_path.clone(),
-                line_count: f.line_count,
-                language: format!("{:?}", f.language),
-                symbols: syms.clone(),
-            })
-            .collect(),
-        memory: all_memory.to_vec(),
-        entry_points: entry_points.to_vec(),
-        critical_files: critical_files
-            .iter()
-            .map(|(path, count)| CriticalFile {
-                path: path.clone(),
-                high_priority_markers: *count,
-            })
-            .collect(),
-        hub_files: hub_files
-            .iter()
-            .map(|(path, count)| HubFile {
-                path: path.clone(),
-                imported_by: *count,
-            })
-            .collect(),
-        diff: diff_stats.map(|stats| DiffInfo {
-            base_ref: diff_base_ref.to_string(),
-            files: stats.clone(),
-        }),
-    };
-    println!("{}", json_output.to_json());
-    Ok(())
+    Ok((all_memory, all_symbols, large_file_symbols, file_graph))
 }
 
 #[allow(clippy::too_many_arguments)]
 fn run_hierarchical_output(
     args: &Args,
-    _work_path: &std::path::Path,
-    output_path: &std::path::Path,
+    output_path: &Path,
     files: &[FileEntry],
     all_symbols: &HashMap<String, Vec<Symbol>>,
     all_memory: &[MemoryEntry],

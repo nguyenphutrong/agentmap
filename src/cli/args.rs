@@ -5,6 +5,12 @@ use std::path::PathBuf;
 pub enum Command {
     /// Update agentmap to the latest version
     Update,
+    /// Watch for file changes and regenerate docs automatically
+    Watch {
+        /// Debounce delay in milliseconds
+        #[arg(long, default_value = "300")]
+        debounce: u64,
+    },
 }
 
 #[derive(Parser, Debug)]

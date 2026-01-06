@@ -33,6 +33,10 @@ chrono = { version = "0.4", features = ["serde"] }
 # Self-update
 self_update = { version = "0.41", features = ["archive-tar", "compression-flate2"] }
 
+# File watching
+notify = "6"
+notify-debouncer-mini = "0.4"
+
 [dev-dependencies]
 tempfile = "3"
 assert_cmd = "2"
