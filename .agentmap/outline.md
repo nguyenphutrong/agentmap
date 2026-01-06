@@ -7,6 +7,7 @@ This file contains symbol maps for large files in the codebase.
 - [OrderController.cs](#ordercontroller-cs) (58 lines, 16 symbols)
 - [OrderService.java](#orderservice-java) (60 lines, 12 symbols)
 - [example.c](#example-c) (35 lines, 6 symbols)
+- [example.cpp](#example-cpp) (62 lines, 7 symbols)
 - [order.php](#order-php) (100 lines, 10 symbols)
 
 ---
@@ -79,6 +80,28 @@ This file contains symbol maps for large files in the codebase.
 - `int add(int a, int b)` (L22)
 - `void* allocate_memory(size_t size)` (L26)
 - `int main(int argc, char* argv[])` (L31)
+
+---
+
+## example.cpp (62 lines)
+
+| Line | Kind | Name | Visibility |
+| ---- | ---- | ---- | ---------- |
+| 5 | mod | game | pub |
+| 7 | enum | Color | pub |
+| 13 | struct | Point | pub |
+| 18 | class | Entity | pub |
+| 30 | class | Player | pub |
+| 45 | class | Container | pub |
+| 58 | fn | main | pub |
+
+### Key Entry Points
+
+- `struct Point` (L13)
+- `class Entity` (L18)
+- `class Player` (L30)
+- `class Container` (L45)
+- `int main()` (L58)
 
 ---
 

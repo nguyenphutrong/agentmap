@@ -6,9 +6,9 @@ This file contains extracted knowledge markers from the codebase.
 
 | Category | Count | High | Medium | Low |
 | -------- | ----- | ---- | ------ | --- |
-| ⚠️ Warnings | 7 | 7 | 0 | 0 |
+| ⚠️ Warnings | 8 | 8 | 0 | 0 |
 | 📋 Business Rules | 4 | 4 | 0 | 0 |
-| 🔧 Technical Debt | 8 | 0 | 8 | 0 |
+| 🔧 Technical Debt | 9 | 0 | 9 | 0 |
 | 📝 Notes | 2 | 0 | 0 | 2 |
 
 ---
@@ -30,6 +30,10 @@ This file contains extracted knowledge markers from the codebase.
 ### 🔴 `WARNING` (example.c:27)
 
 > Caller must free the returned memory
+
+### 🔴 `WARNING` (example.cpp:35)
+
+> Performance critical
 
 ### 🔴 `WARNING` (order.php:2)
 
@@ -86,6 +90,10 @@ This file contains extracted knowledge markers from the codebase.
 ### 🟡 `TODO` (example.c:4)
 
 > Add error handling
+
+### 🟡 `TODO` (example.cpp:4)
+
+> Implement caching
 
 ### 🟡 `TODO` (order.php:12)
 
