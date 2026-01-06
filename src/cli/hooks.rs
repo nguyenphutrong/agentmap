@@ -1,7 +1,9 @@
 use anyhow::{Context, Result};
 use std::fs;
-use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
+
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
 
 const PRE_COMMIT_HOOK: &str = r#"#!/bin/sh
 # agentmap pre-commit hook
@@ -114,9 +116,12 @@ fn install_hook(hooks_dir: &Path, name: &str, content: &str) -> Result<()> {
         eprintln!("  {} hook created", name);
     }
 
-    let mut perms = fs::metadata(&hook_path)?.permissions();
-    perms.set_mode(0o755);
-    fs::set_permissions(&hook_path, perms)?;
+    #[cfg(unix)]
+    {
+        let mut perms = fs::metadata(&hook_path)?.permissions();
+        perms.set_mode(0o755);
+        fs::set_permissions(&hook_path, perms)?;
+    }
 
     Ok(())
 }
