@@ -15,8 +15,23 @@
 | `src/emit/mod.rs` | 9 |  |
 | `src/emit/writer.rs` | 224 |  |
 
-## Documentation
+---
 
-- [outline.md](outline.md) - Symbol maps for large files
-- [memory.md](memory.md) - Warnings and TODOs
-- [imports.md](imports.md) - Dependencies
+Dependencies within this module:
+
+- `json`
+- `manifest`
+- `writer`
+
+## External Dependencies
+
+Dependencies from other modules:
+
+- `analyze`
+- `anyhow`
+- `chrono`
+- `scan`
+- `serde`
+- `std`
+- `super`
+- `types`

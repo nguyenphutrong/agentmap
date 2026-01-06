@@ -16,8 +16,22 @@
 | `src/scan/remote.rs` | 86 |  |
 | `src/scan/walker.rs` | 128 |  |
 
-## Documentation
+---
 
-- [outline.md](outline.md) - Symbol maps for large files
-- [memory.md](memory.md) - Warnings and TODOs
-- [imports.md](imports.md) - Dependencies
+Dependencies within this module:
+
+- `filter`
+- `git`
+- `remote`
+- `walker`
+
+## External Dependencies
+
+Dependencies from other modules:
+
+- `anyhow`
+- `ignore`
+- `serde`
+- `std`
+- `super`
+- `types`

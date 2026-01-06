@@ -15,11 +15,30 @@
 | `src/generate/index.rs` | 328 |  |
 | `src/generate/memory.rs` | 177 |  |
 | `src/generate/mod.rs` | 16 |  |
-| `src/generate/module_content.rs` | 382 |  |
+| `src/generate/module_content.rs` | 530 | 📊 |
 | `src/generate/outline.rs` | 71 |  |
 
 ## Documentation
 
 - [outline.md](outline.md) - Symbol maps for large files
-- [memory.md](memory.md) - Warnings and TODOs
-- [imports.md](imports.md) - Dependencies
+
+---
+
+Dependencies within this module:
+
+- `file_doc`
+- `imports`
+- `index`
+- `memory`
+- `module_content`
+- `outline`
+
+## External Dependencies
+
+Dependencies from other modules:
+
+- `analyze`
+- `emit`
+- `std`
+- `super`
+- `types`

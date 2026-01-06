@@ -20,8 +20,24 @@
 
 - [src-analyze-lang](../src-analyze-lang/MODULE.md)
 
-## Documentation
+---
 
-- [outline.md](outline.md) - Symbol maps for large files
-- [memory.md](memory.md) - Warnings and TODOs
-- [imports.md](imports.md) - Dependencies
+Dependencies within this module:
+
+- `analyze`
+- `graph`
+- `memory`
+- `module`
+- `parser`
+
+## External Dependencies
+
+Dependencies from other modules:
+
+- `lang`
+- `once_cell`
+- `regex`
+- `serde`
+- `std`
+- `super`
+- `types`

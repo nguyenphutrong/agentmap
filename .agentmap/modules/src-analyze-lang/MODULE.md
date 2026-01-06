@@ -24,8 +24,28 @@
 | `src/analyze/lang/rust.rs` | 220 |  |
 | `src/analyze/lang/swift.rs` | 244 |  |
 
-## Documentation
+---
 
-- [outline.md](outline.md) - Symbol maps for large files
-- [memory.md](memory.md) - Warnings and TODOs
-- [imports.md](imports.md) - Dependencies
+Dependencies within this module:
+
+- `analyze`
+- `c`
+- `cpp`
+- `csharp`
+- `dart`
+- `go`
+- `java`
+- `javascript`
+- `php`
+- `python`
+- `ruby`
+- `rust`
+- `swift`
+
+## External Dependencies
+
+Dependencies from other modules:
+
+- `once_cell`
+- `regex`
+- `types`

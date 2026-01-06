@@ -22,8 +22,18 @@
 - [src-scan](../src-scan/MODULE.md)
 - [src-types](../src-types/MODULE.md)
 
-## Documentation
+---
 
-- [outline.md](outline.md) - Symbol maps for large files
-- [memory.md](memory.md) - Warnings and TODOs
-- [imports.md](imports.md) - Dependencies
+Dependencies from other modules:
+
+- `agentmap`
+- `analyze`
+- `anyhow`
+- `chrono`
+- `clap`
+- `cli`
+- `emit`
+- `generate`
+- `scan`
+- `std`
+- `types`

@@ -15,8 +15,17 @@
 | `src/types/mod.rs` | 7 |  |
 | `src/types/symbol.rs` | 108 |  |
 
-## Documentation
+---
 
-- [outline.md](outline.md) - Symbol maps for large files
-- [memory.md](memory.md) - Warnings and TODOs
-- [imports.md](imports.md) - Dependencies
+Dependencies within this module:
+
+- `file`
+- `memory`
+- `symbol`
+
+## External Dependencies
+
+Dependencies from other modules:
+
+- `serde`
+- `std`
