@@ -71,13 +71,20 @@ fn main() -> Result<()> {
         agents_md,
     };
 
-    write_outputs(&args.output, &bundle, args.dry_run).context("Failed to write outputs")?;
+    // Output path should be relative to the target project, not CWD
+    let output_path = if args.output.is_absolute() {
+        args.output.clone()
+    } else {
+        args.path.join(&args.output)
+    };
+
+    write_outputs(&output_path, &bundle, args.dry_run).context("Failed to write outputs")?;
 
     if args.verbosity() > 0 && !args.dry_run {
         eprintln!("\nGenerated:");
-        eprintln!("  {}/outline.md", args.output.display());
-        eprintln!("  {}/memory.md", args.output.display());
-        eprintln!("  {}/AGENTS.md", args.output.display());
+        eprintln!("  {}/outline.md", output_path.display());
+        eprintln!("  {}/memory.md", output_path.display());
+        eprintln!("  {}/AGENTS.md", output_path.display());
     }
 
     Ok(())
