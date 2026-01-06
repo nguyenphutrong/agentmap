@@ -31,6 +31,7 @@ These files exceed the line threshold. Use `outline.md` for symbol maps:
 | `OrderService.java` | 60 | Java |
 | `example.c` | 35 | C |
 | `example.cpp` | 62 | Cpp |
+| `example.rb` | 44 | Ruby |
 | `order.php` | 100 | Php |
 
 ## Critical Files (Review memory.md First)
@@ -44,6 +45,7 @@ These files contain high-priority warnings or business rules:
 | `OrderService.java` | 2 |
 | `example.c` | 1 |
 | `example.cpp` | 1 |
+| `example.rb` | 1 |
 
 ---
 

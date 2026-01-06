@@ -6,9 +6,9 @@ This file contains extracted knowledge markers from the codebase.
 
 | Category | Count | High | Medium | Low |
 | -------- | ----- | ---- | ------ | --- |
-| ⚠️ Warnings | 8 | 8 | 0 | 0 |
+| ⚠️ Warnings | 9 | 9 | 0 | 0 |
 | 📋 Business Rules | 4 | 4 | 0 | 0 |
-| 🔧 Technical Debt | 9 | 0 | 9 | 0 |
+| 🔧 Technical Debt | 10 | 0 | 10 | 0 |
 | 📝 Notes | 2 | 0 | 0 | 2 |
 
 ---
@@ -34,6 +34,10 @@ This file contains extracted knowledge markers from the codebase.
 ### 🔴 `WARNING` (example.cpp:35)
 
 > Performance critical
+
+### 🔴 `WARNING` (example.rb:12)
+
+> Validate all params
 
 ### 🔴 `WARNING` (order.php:2)
 
@@ -94,6 +98,10 @@ This file contains extracted knowledge markers from the codebase.
 ### 🟡 `TODO` (example.cpp:4)
 
 > Implement caching
+
+### 🟡 `TODO` (example.rb:1)
+
+> Add authentication
 
 ### 🟡 `TODO` (order.php:12)
 

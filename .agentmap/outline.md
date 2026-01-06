@@ -8,6 +8,7 @@ This file contains symbol maps for large files in the codebase.
 - [OrderService.java](#orderservice-java) (60 lines, 12 symbols)
 - [example.c](#example-c) (35 lines, 6 symbols)
 - [example.cpp](#example-cpp) (62 lines, 7 symbols)
+- [example.rb](#example-rb) (44 lines, 11 symbols)
 - [order.php](#order-php) (100 lines, 10 symbols)
 
 ---
@@ -102,6 +103,28 @@ This file contains symbol maps for large files in the codebase.
 - `class Player` (L30)
 - `class Container` (L45)
 - `int main()` (L58)
+
+---
+
+## example.rb (44 lines)
+
+| Line | Kind | Name | Visibility |
+| ---- | ---- | ---- | ---------- |
+| 2 | mod | Shop | pub |
+| 4 | const | order_service | pub |
+| 5 | const | logger | pub |
+| 5 | const | config | pub |
+| 6 | method | initialize | pub |
+| 10 | method | create | pub |
+| 16 | method | show | pub |
+| 21 | fn | self.routes | pub |
+| 27 | method | validate_params | (private) |
+| 33 | method | log_action | (internal) |
+| 40 | method | format_currency | pub |
+
+### Key Entry Points
+
+- `def self.routes` (L21)
 
 ---
 

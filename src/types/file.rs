@@ -12,6 +12,7 @@ pub enum Language {
     CSharp,
     C,
     Cpp,
+    Ruby,
     Unknown,
 }
 
@@ -29,6 +30,7 @@ impl Language {
             "c" => Language::C,
             "h" | "hpp" | "hh" | "hxx" => Language::Cpp,
             "cpp" | "cc" | "cxx" => Language::Cpp,
+            "rb" | "rake" => Language::Ruby,
             _ => Language::Unknown,
         }
     }

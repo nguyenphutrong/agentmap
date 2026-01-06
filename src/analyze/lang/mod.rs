@@ -6,6 +6,7 @@ mod java;
 mod javascript;
 mod php;
 mod python;
+mod ruby;
 mod rust;
 
 pub use c::CParser;
@@ -16,6 +17,7 @@ pub use java::JavaParser;
 pub use javascript::JavaScriptParser;
 pub use php::PhpParser;
 pub use python::PythonParser;
+pub use ruby::RubyParser;
 pub use rust::RustParser;
 
 use crate::types::{Language, Symbol};
@@ -35,6 +37,7 @@ pub fn get_parser(language: Language) -> Option<Box<dyn LanguageParser>> {
         Language::CSharp => Some(Box::new(CSharpParser)),
         Language::C => Some(Box::new(CParser)),
         Language::Cpp => Some(Box::new(CppParser)),
+        Language::Ruby => Some(Box::new(RubyParser)),
         Language::Unknown => None,
     }
 }
