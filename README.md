@@ -9,22 +9,40 @@
 
 ## What It Does
 
-agentmap scans your codebase and generates four files:
+agentmap scans your codebase and generates a **hierarchical documentation structure** organized by modules:
 
-| File | Purpose |
-|------|---------
-| `outline.md` | Symbol maps for large files (functions, classes, structs with line numbers) |
-| `memory.md` | Extracted knowledge markers (TODO, FIXME, WARNING, SAFETY, business rules) |
-| `imports.md` | File dependency graph showing imports and importers for each file |
-| `AGENTS.md` | Reading instructions for AI agents (entry points, hub files, critical warnings) |
+```
+.agentmap/
+├── INDEX.md              # L0: Global routing table
+├── modules/
+│   └── {module-slug}/
+│       ├── MODULE.md     # L1: Module summary
+│       ├── outline.md    # L1: Symbol maps for this module
+│       ├── memory.md     # L1: Warnings/TODOs for this module
+│       └── imports.md    # L1: Dependencies for this module
+└── files/
+    └── {file-slug}.md    # L2: Deep docs for complex files (optional)
+```
+
+### Content Hierarchy
+
+| Level | File | Purpose | Size |
+|-------|------|---------|------|
+| L0 | `INDEX.md` | Global routing table with module overview | O(modules) |
+| L1 | `MODULE.md` | Module summary, file list, entry points | O(files in module) |
+| L1 | `outline.md` | Symbol maps for large files in module | O(large files) |
+| L1 | `memory.md` | Warnings and TODOs scoped to module | O(markers) |
+| L1 | `imports.md` | Intra/inter-module dependencies | O(imports) |
+| L2 | `files/*.md` | Deep documentation for complex files | O(symbols) |
 
 ## Why?
 
 AI coding assistants struggle with large codebases because they can't see the full picture. agentmap provides:
 
+- **Hierarchical navigation** so AI loads only what it needs (not entire codebase docs)
+- **Module detection** that groups files into semantic units automatically
 - **Symbol maps** so AI knows what's in large files without reading them entirely
-- **Extracted warnings** so AI doesn't miss critical TODOs or safety notes
-- **Reading order** so AI starts from the right entry points
+- **Scoped context** so each module's docs contain only relevant information
 
 ## Installation
 
@@ -48,11 +66,14 @@ cargo build --release
 ### Basic
 
 ```bash
-# Generate docs for current directory
+# Generate docs for current directory (hierarchical mode - default)
 agentmap
 
 # Output to custom directory
 agentmap -o docs/ai
+
+# Use legacy flat structure (v0.1 compatible)
+agentmap --legacy
 
 # Preview without writing files
 agentmap --dry-run
@@ -101,84 +122,147 @@ Arguments:
   [PATH]  Target directory or GitHub URL [default: .]
 
 Options:
-  -o, --output <OUTPUT>        Output directory [default: .agentmap]
-  -t, --threshold <THRESHOLD>  Line threshold for "large" files [default: 500]
-  -d, --depth <DEPTH>          Max directory depth (0 = unlimited) [default: 0]
-      --diff <REF>             Compare against git branch/commit
-      --json                   Output JSON to stdout instead of markdown files
-  -i, --ignore <IGNORE>        Additional patterns to ignore
-  -l, --lang <LANG>            Filter by language
-      --no-gitignore           Don't respect .gitignore
-      --dry-run                Preview output without writing
-  -v, --verbose...             Increase verbosity (-v, -vv, -vvv)
-  -q, --quiet                  Suppress all output
-  -h, --help                   Print help
-  -V, --version                Print version
+  -o, --output <OUTPUT>              Output directory [default: .agentmap]
+  -t, --threshold <THRESHOLD>        Line threshold for "large" files [default: 500]
+  -c, --complex-threshold <COMPLEX>  Symbol threshold for L2 file docs [default: 30]
+  -d, --depth <DEPTH>                Max directory depth (0 = unlimited) [default: 0]
+      --diff <REF>                   Compare against git branch/commit
+      --json                         Output JSON to stdout instead of markdown files
+      --legacy                       Use legacy flat structure (v0.1 compatible)
+  -i, --ignore <IGNORE>              Additional patterns to ignore
+  -l, --lang <LANG>                  Filter by language
+      --no-gitignore                 Don't respect .gitignore
+      --dry-run                      Preview output without writing
+  -v, --verbose...                   Increase verbosity (-v, -vv, -vvv)
+  -q, --quiet                        Suppress all output
+  -h, --help                         Print help
+  -V, --version                      Print version
 ```
+
+## Module Detection
+
+agentmap automatically detects module boundaries using language-specific conventions:
+
+| Language | Explicit Boundary | Example |
+|----------|-------------------|---------|
+| Rust | `mod.rs`, `lib.rs` | `src/analyze/mod.rs` → module `src-analyze` |
+| Python | `__init__.py` | `src/utils/__init__.py` → module `src-utils` |
+| JavaScript/TypeScript | `index.{js,ts,tsx}` | `src/components/index.ts` → module `src-components` |
+| Any | 5+ source files in directory | `src/helpers/` with 5+ files → implicit module |
+
+### Module Slug Naming
+
+Directory paths are converted to slugs using hyphens:
+- `src/analyze/lang` → `src-analyze-lang`
+- `lib/utils` → `lib-utils`
 
 ## Example Output
 
-### outline.md
+### INDEX.md (L0 Global)
 
 ```markdown
-## src/analyze/parser.rs (450 lines)
+# Project
+
+## Reading Protocol
+
+**Start here**, then navigate to specific modules.
+
+1. Read this INDEX for overview
+2. Go to relevant `modules/{name}/MODULE.md`
+3. Check module's `outline.md` for large files
+4. Check module's `memory.md` for warnings
+
+## Entry Points
+
+- `src/main.rs`
+- `src/lib.rs`
+
+## Modules
+
+| Module | Type | Files | Warnings | Hub |
+| ------ | ---- | ----- | -------- | --- |
+| [src](modules/src/MODULE.md) | rust | 2 | - |  |
+| [src/analyze](modules/src-analyze/MODULE.md) | rust | 5 | ⚠️ 2 |  |
+| [src/generate](modules/src-generate/MODULE.md) | rust | 8 | - | 🔗 |
+```
+
+### MODULE.md (L1 Module)
+
+```markdown
+# Module: src/analyze
+
+[← Back to INDEX](../../INDEX.md)
+
+**Type:** rust | **Files:** 5
+
+**Entry point:** `src/analyze/mod.rs`
+
+## Files
+
+| File | Lines | Large |
+| ---- | ----- | ----- |
+| `src/analyze/graph.rs` | 98 |  |
+| `src/analyze/parser.rs` | 650 | 📄 |
+| `src/analyze/mod.rs` | 10 |  |
+
+## Child Modules
+
+- [src-analyze-lang](../src-analyze-lang/MODULE.md)
+
+## Documentation
+
+- [outline.md](outline.md) - Symbol maps for large files
+- [memory.md](memory.md) - Warnings and TODOs
+- [imports.md](imports.md) - Dependencies
+```
+
+### outline.md (L1 Module-Scoped)
+
+```markdown
+# Outline: src/analyze
+
+[← MODULE.md](MODULE.md) | [← INDEX.md](../../INDEX.md)
+
+## src/analyze/parser.rs (650 lines)
 
 | Line | Kind | Name | Visibility |
 | ---- | ---- | ---- | ---------- |
 | 15 | fn | parse_symbols | pub |
 | 89 | fn | extract_functions | (private) |
 | 156 | struct | ParseResult | pub |
-
-### Key Entry Points
-- `pub fn parse_symbols(content: &str) -> Vec<Symbol>` (L15)
 ```
 
-### memory.md
+### memory.md (L1 Module-Scoped)
 
 ```markdown
+# Memory: src/analyze
+
+[← MODULE.md](MODULE.md) | [← INDEX.md](../../INDEX.md)
+
 ## ⚠️ Warnings
 
-### 🔴 `WARNING` (src/auth.rs:42)
-> Never store passwords in plain text
+### 🔴 `WARNING` (src/analyze/parser.rs:42)
+> Edge case not handled for nested generics
 
 ## 🔧 Technical Debt
 
-### 🟡 `TODO` (src/api.rs:128)
-> Implement rate limiting before production
-```
-
-### AGENTS.md
-
-```markdown
-## Reading Protocol
-
-**MUST**:
-- Read `outline.md` before exploring large files
-- Check `memory.md` for warnings and business rules
-
-## Entry Points
-- `src/main.rs`
-- `src/lib.rs`
-
-## Large Files (Consult outline.md)
-| File | Lines |
-| ---- | ----- |
-| `src/parser.rs` | 892 |
+### 🟡 `TODO` (src/analyze/graph.rs:128)
+> Optimize cycle detection algorithm
 ```
 
 ## Supported Languages
 
-| Language | Symbol Extraction | Import Graph | Memory Markers |
-|----------|-------------------|--------------|----------------|
-| Rust | ✅ Functions, structs, enums, traits, impls | ✅ | ✅ |
-| Python | ✅ Functions, classes, methods | ✅ | ✅ |
-| JavaScript/TypeScript | ✅ Functions, classes, arrow functions | ✅ | ✅ |
-| Go | ✅ Functions, structs, interfaces, methods | ✅ | ✅ |
-| Swift | ✅ Functions, classes, structs, enums, protocols | ✅ | ✅ |
-| Dart | ✅ Functions, classes, mixins, extensions | ✅ | ✅ |
-| Ruby | ✅ Methods, classes, modules | ✅ | ✅ |
-| C# | ✅ Methods, classes, structs, interfaces | ✅ | ✅ |
-| Java | ✅ Methods, classes, interfaces, enums | ✅ | ✅ |
+| Language | Symbol Extraction | Import Graph | Memory Markers | Module Detection |
+|----------|-------------------|--------------|----------------|------------------|
+| Rust | ✅ Functions, structs, enums, traits, impls | ✅ | ✅ | ✅ `mod.rs` |
+| Python | ✅ Functions, classes, methods | ✅ | ✅ | ✅ `__init__.py` |
+| JavaScript/TypeScript | ✅ Functions, classes, arrow functions | ✅ | ✅ | ✅ `index.{js,ts}` |
+| Go | ✅ Functions, structs, interfaces, methods | ✅ | ✅ | ✅ implicit |
+| Swift | ✅ Functions, classes, structs, enums, protocols | ✅ | ✅ | ✅ implicit |
+| Dart | ✅ Functions, classes, mixins, extensions | ✅ | ✅ | ✅ implicit |
+| Ruby | ✅ Methods, classes, modules | ✅ | ✅ | ✅ implicit |
+| C# | ✅ Methods, classes, structs, interfaces | ✅ | ✅ | ✅ implicit |
+| Java | ✅ Methods, classes, interfaces, enums | ✅ | ✅ | ✅ implicit |
 
 ## Memory Markers
 
@@ -201,14 +285,53 @@ Add to your project's AI instructions:
 
 ```
 Before working on this codebase, read:
-1. .agentmap/AGENTS.md - for reading instructions
-2. .agentmap/memory.md - for warnings and TODOs
-3. .agentmap/outline.md - for large file navigation
+1. .agentmap/INDEX.md - for project overview and module routing
+2. Navigate to relevant module's MODULE.md for details
+3. Check module's memory.md for warnings before editing
+4. Consult module's outline.md for large file navigation
 ```
 
 ### GitHub Copilot
 
 Include `.agentmap/` in your workspace context.
+
+### JSON Integration
+
+For programmatic access:
+
+```bash
+agentmap --json | jq '.modules[] | {slug, file_count, warning_count}'
+```
+
+JSON output includes:
+- `modules[]` - Array of module metadata (slug, path, file_count, warning_count, symbol_count, is_hub)
+- `files[]` - All scanned files with metadata
+- `memory[]` - All memory markers with locations
+- `entry_points[]` - Detected entry points
+- `hub_files[]` - Files imported by 3+ others
+
+## Migration from v0.1
+
+v0.2 introduces hierarchical output. To use the legacy flat structure:
+
+```bash
+agentmap --legacy
+```
+
+### Key Changes
+
+| v0.1 | v0.2 |
+|------|------|
+| `.agentmap/AGENTS.md` | `.agentmap/INDEX.md` |
+| `.agentmap/outline.md` (global) | `.agentmap/modules/{slug}/outline.md` (per-module) |
+| `.agentmap/memory.md` (global) | `.agentmap/modules/{slug}/memory.md` (per-module) |
+| `.agentmap/imports.md` (global) | `.agentmap/modules/{slug}/imports.md` (per-module) |
+
+### Benefits of v0.2
+
+- **Smaller context per query** - AI loads only relevant module docs
+- **Better scalability** - O(module) routing instead of O(files)
+- **Clearer organization** - Related files grouped together
 
 ## Development
 
