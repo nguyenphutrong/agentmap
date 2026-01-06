@@ -3,47 +3,84 @@ use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(name = "agentmap")]
-#[command(version = "0.1.0")]
-#[command(
-    about = "Prepare codebases for AI agents by generating outlines, memory files, and reading rules"
-)]
+#[command(version = "0.2.0")]
+#[command(about = "Prepare codebases for AI agents by generating hierarchical documentation")]
+#[command(long_about = "
+agentmap scans your codebase and generates a hierarchical documentation structure:
+
+  .agentmap/
+  ├── INDEX.md              # Global routing table (constant size)
+  ├── modules/{module}/     # Per-module documentation
+  │   ├── MODULE.md         # Module overview and file list
+  │   ├── outline.md        # Symbol maps for large files
+  │   ├── memory.md         # TODOs, warnings, business rules
+  │   └── imports.md        # Dependencies within module
+  └── files/{slug}.md       # Deep docs for complex files (L2)
+
+This hierarchical structure scales O(1) per module, enabling AI agents to
+efficiently navigate large codebases without context overflow.
+")]
 #[command(author = "AgentMap Contributors")]
 pub struct Args {
+    /// Target directory or GitHub URL
     #[arg(default_value = ".")]
     pub path: PathBuf,
 
+    /// Output directory for generated documentation
     #[arg(short, long, default_value = ".agentmap")]
     pub output: PathBuf,
 
+    /// Line threshold for "large" files (generates outline)
     #[arg(short, long, default_value = "500")]
     pub threshold: usize,
 
+    /// Line threshold for L2 file-level docs (very complex files)
+    #[arg(long, default_value = "1000", value_name = "LINES")]
+    pub complex_threshold: usize,
+
+    /// Maximum module nesting depth (0 = unlimited)
+    #[arg(long, default_value = "3", value_name = "DEPTH")]
+    pub module_depth: usize,
+
+    /// Additional patterns to ignore
     #[arg(short, long, action = clap::ArgAction::Append)]
     pub ignore: Vec<String>,
 
+    /// Filter by language
     #[arg(short, long, action = clap::ArgAction::Append)]
     pub lang: Vec<String>,
 
+    /// Don't respect .gitignore
     #[arg(long, default_value = "false")]
     pub no_gitignore: bool,
 
+    /// Preview output without writing files
     #[arg(long, default_value = "false")]
     pub dry_run: bool,
 
+    /// Increase verbosity (-v, -vv, -vvv)
     #[arg(short, long, action = clap::ArgAction::Count)]
     pub verbose: u8,
 
+    /// Suppress all output
     #[arg(short, long, default_value = "false")]
     pub quiet: bool,
 
+    /// Compare against git branch/commit
     #[arg(long, value_name = "REF")]
     pub diff: Option<String>,
 
+    /// Output JSON to stdout instead of markdown files
     #[arg(long, default_value = "false")]
     pub json: bool,
 
+    /// Max directory depth (0 = unlimited)
     #[arg(short = 'd', long, default_value = "0")]
     pub depth: usize,
+
+    /// Use legacy flat output format (AGENTS.md, outline.md, etc.)
+    #[arg(long, default_value = "false")]
+    pub legacy: bool,
 }
 
 impl Args {

@@ -1,17 +1,21 @@
 use anyhow::{Context, Result};
 use chrono::Utc;
 use clap::Parser;
+use std::collections::HashMap;
 use std::fs;
 
-use agentmap::analyze::{extract_imports, extract_memory_markers, extract_symbols, FileGraph};
+use agentmap::analyze::{
+    detect_modules, extract_imports, extract_memory_markers, extract_symbols, FileGraph,
+};
 use agentmap::cli::Args;
 use agentmap::emit::{
-    write_outputs, CriticalFile, DiffInfo, HubFile, JsonOutput, LargeFileEntry, OutputBundle,
-    ProjectInfo,
+    write_hierarchical, write_outputs, CriticalFile, DiffInfo, HierarchicalOutput, HubFile,
+    JsonOutput, LargeFileEntry, OutputBundle, ProjectInfo,
 };
 use agentmap::generate::{
-    detect_entry_points, generate_agents_md, generate_imports, generate_memory, generate_outline,
-    get_critical_files, AgentsConfig,
+    detect_entry_points, file_path_to_slug, generate_agents_md, generate_file_doc,
+    generate_imports, generate_index_md, generate_memory, generate_module_content,
+    generate_outline, get_critical_files, is_complex_file, AgentsConfig, IndexConfig,
 };
 use agentmap::scan::{
     cleanup_temp, clone_to_temp, get_default_branch, get_diff_files, is_git_repo, scan_directory,
@@ -98,6 +102,7 @@ fn run_analysis(args: &Args, work_path: &std::path::Path) -> Result<()> {
     }
 
     let mut all_memory: Vec<MemoryEntry> = Vec::new();
+    let mut all_symbols: HashMap<String, Vec<Symbol>> = HashMap::new();
     let mut large_file_symbols: Vec<(FileEntry, Vec<Symbol>)> = Vec::new();
     let mut file_graph = FileGraph::new();
 
@@ -113,8 +118,10 @@ fn run_analysis(args: &Args, work_path: &std::path::Path) -> Result<()> {
         let imports = extract_imports(file, &content);
         file_graph.add_file(&file.relative_path, imports);
 
+        let symbols = extract_symbols(file, &content);
+        all_symbols.insert(file.relative_path.clone(), symbols.clone());
+
         if file.is_large {
-            let symbols = extract_symbols(file, &content);
             large_file_symbols.push((file.clone(), symbols));
         }
     }
@@ -127,10 +134,6 @@ fn run_analysis(args: &Args, work_path: &std::path::Path) -> Result<()> {
         );
         eprintln!("  Memory markers found: {}", all_memory.len());
     }
-
-    let outline = generate_outline(&large_file_symbols);
-    let memory = generate_memory(&all_memory);
-    let imports = generate_imports(&file_graph);
 
     let critical_files = get_critical_files(&all_memory);
     let entry_points = detect_entry_points(&files);
@@ -147,65 +150,145 @@ fn run_analysis(args: &Args, work_path: &std::path::Path) -> Result<()> {
         .or_else(|| get_default_branch(work_path))
         .unwrap_or_else(|| "main".to_string());
 
+    if args.json {
+        return run_json_output(
+            args,
+            work_path,
+            &files,
+            &large_file_symbols,
+            &all_memory,
+            &entry_points,
+            &critical_files,
+            &hub_files,
+            diff_stats.as_ref(),
+            &diff_base_ref,
+        );
+    }
+
+    let output_path = if args.output.is_absolute() {
+        args.output.clone()
+    } else {
+        work_path.join(&args.output)
+    };
+
+    if args.legacy {
+        run_legacy_output(
+            args,
+            &output_path,
+            &large_file_symbols,
+            &all_memory,
+            &file_graph,
+            &large_files_refs,
+            &critical_files,
+            &entry_points,
+            &hub_files,
+            diff_stats.as_deref(),
+            &diff_base_ref,
+        )
+    } else {
+        run_hierarchical_output(
+            args,
+            work_path,
+            &output_path,
+            &files,
+            &all_symbols,
+            &all_memory,
+            &file_graph,
+            &entry_points,
+            &hub_files,
+            &critical_files,
+        )
+    }
+}
+
+fn run_json_output(
+    _args: &Args,
+    work_path: &std::path::Path,
+    files: &[FileEntry],
+    large_file_symbols: &[(FileEntry, Vec<Symbol>)],
+    all_memory: &[MemoryEntry],
+    entry_points: &[String],
+    critical_files: &[(String, usize)],
+    hub_files: &[(String, usize)],
+    diff_stats: Option<&Vec<DiffStat>>,
+    diff_base_ref: &str,
+) -> Result<()> {
+    let json_output = JsonOutput {
+        version: env!("CARGO_PKG_VERSION").to_string(),
+        generated_at: Utc::now(),
+        project: ProjectInfo {
+            path: work_path.display().to_string(),
+            files_scanned: files.len(),
+            large_files_count: large_file_symbols.len(),
+            memory_markers_count: all_memory.len(),
+        },
+        files: files.to_vec(),
+        large_files: large_file_symbols
+            .iter()
+            .map(|(f, syms)| LargeFileEntry {
+                path: f.relative_path.clone(),
+                line_count: f.line_count,
+                language: format!("{:?}", f.language),
+                symbols: syms.clone(),
+            })
+            .collect(),
+        memory: all_memory.to_vec(),
+        entry_points: entry_points.to_vec(),
+        critical_files: critical_files
+            .iter()
+            .map(|(path, count)| CriticalFile {
+                path: path.clone(),
+                high_priority_markers: *count,
+            })
+            .collect(),
+        hub_files: hub_files
+            .iter()
+            .map(|(path, count)| HubFile {
+                path: path.clone(),
+                imported_by: *count,
+            })
+            .collect(),
+        diff: diff_stats.map(|stats| DiffInfo {
+            base_ref: diff_base_ref.to_string(),
+            files: stats.clone(),
+        }),
+    };
+    println!("{}", json_output.to_json());
+    Ok(())
+}
+
+#[allow(clippy::too_many_arguments)]
+fn run_legacy_output(
+    args: &Args,
+    output_path: &std::path::Path,
+    large_file_symbols: &[(FileEntry, Vec<Symbol>)],
+    all_memory: &[MemoryEntry],
+    file_graph: &FileGraph,
+    large_files_refs: &[FileEntry],
+    critical_files: &[(String, usize)],
+    entry_points: &[String],
+    hub_files: &[(String, usize)],
+    diff_stats: Option<&[DiffStat]>,
+    diff_base_ref: &str,
+) -> Result<()> {
+    let outline = generate_outline(large_file_symbols);
+    let memory = generate_memory(all_memory);
+    let imports = generate_imports(file_graph);
+
     let agents_config = AgentsConfig {
-        large_files: &large_files_refs,
-        critical_files: &critical_files,
-        entry_points: &entry_points,
-        hub_files: &hub_files,
-        diff_stats: diff_stats.as_deref(),
+        large_files: large_files_refs,
+        critical_files,
+        entry_points,
+        hub_files,
+        diff_stats,
         diff_base: if diff_stats.is_some() {
-            Some(diff_base_ref.as_str())
+            Some(diff_base_ref)
         } else {
             None
         },
     };
 
     let agents_md = generate_agents_md(&agents_config);
-
-    if args.json {
-        let json_output = JsonOutput {
-            version: env!("CARGO_PKG_VERSION").to_string(),
-            generated_at: Utc::now(),
-            project: ProjectInfo {
-                path: work_path.display().to_string(),
-                files_scanned: files.len(),
-                large_files_count: large_file_symbols.len(),
-                memory_markers_count: all_memory.len(),
-            },
-            files: files.clone(),
-            large_files: large_file_symbols
-                .iter()
-                .map(|(f, syms)| LargeFileEntry {
-                    path: f.relative_path.clone(),
-                    line_count: f.line_count,
-                    language: format!("{:?}", f.language),
-                    symbols: syms.clone(),
-                })
-                .collect(),
-            memory: all_memory.clone(),
-            entry_points: entry_points.clone(),
-            critical_files: critical_files
-                .iter()
-                .map(|(path, count)| CriticalFile {
-                    path: path.clone(),
-                    high_priority_markers: *count,
-                })
-                .collect(),
-            hub_files: hub_files
-                .iter()
-                .map(|(path, count)| HubFile {
-                    path: path.clone(),
-                    imported_by: *count,
-                })
-                .collect(),
-            diff: diff_stats.as_ref().map(|stats| DiffInfo {
-                base_ref: diff_base_ref.clone(),
-                files: stats.clone(),
-            }),
-        };
-        println!("{}", json_output.to_json());
-        return Ok(());
-    }
 
     let bundle = OutputBundle {
         outline,
@@ -214,21 +297,133 @@ fn run_analysis(args: &Args, work_path: &std::path::Path) -> Result<()> {
         agents_md,
     };
 
-    // Output path should be relative to the target project, not CWD
-    let output_path = if args.output.is_absolute() {
-        args.output.clone()
-    } else {
-        work_path.join(&args.output)
-    };
-
-    write_outputs(&output_path, &bundle, args.dry_run).context("Failed to write outputs")?;
+    write_outputs(output_path, &bundle, args.dry_run).context("Failed to write outputs")?;
 
     if args.verbosity() > 0 && !args.dry_run {
-        eprintln!("\nGenerated:");
+        eprintln!("\nGenerated (legacy mode):");
         eprintln!("  {}/outline.md", output_path.display());
         eprintln!("  {}/memory.md", output_path.display());
         eprintln!("  {}/imports.md", output_path.display());
         eprintln!("  {}/AGENTS.md", output_path.display());
+    }
+
+    Ok(())
+}
+
+#[allow(clippy::too_many_arguments)]
+fn run_hierarchical_output(
+    args: &Args,
+    _work_path: &std::path::Path,
+    output_path: &std::path::Path,
+    files: &[FileEntry],
+    all_symbols: &HashMap<String, Vec<Symbol>>,
+    all_memory: &[MemoryEntry],
+    file_graph: &FileGraph,
+    entry_points: &[String],
+    hub_files: &[(String, usize)],
+    _critical_files: &[(String, usize)],
+) -> Result<()> {
+    let modules = detect_modules(files);
+
+    if args.verbosity() > 0 {
+        eprintln!("  Modules detected: {}", modules.len());
+    }
+
+    if args.verbosity() > 1 {
+        for module in &modules {
+            eprintln!(
+                "    {} ({} files, {:?})",
+                module.slug,
+                module.files.len(),
+                module.boundary_type
+            );
+        }
+    }
+
+    let hub_module_slugs: Vec<(String, usize)> = hub_files
+        .iter()
+        .filter_map(|(path, count)| {
+            modules
+                .iter()
+                .find(|m| m.files.contains(path))
+                .map(|m| (m.slug.clone(), *count))
+        })
+        .collect();
+
+    let index_config = IndexConfig {
+        modules: &modules,
+        memory_entries: all_memory,
+        entry_points,
+        hub_modules: &hub_module_slugs,
+        project_name: None,
+    };
+    let index_md = generate_index_md(&index_config);
+    let mut output = HierarchicalOutput::new(index_md);
+
+    let large_file_symbols: Vec<(FileEntry, Vec<Symbol>)> = files
+        .iter()
+        .filter(|f| f.is_large)
+        .filter_map(|f| {
+            all_symbols
+                .get(&f.relative_path)
+                .map(|s| (f.clone(), s.clone()))
+        })
+        .collect();
+
+    for module in &modules {
+        let module_memory: Vec<_> = all_memory
+            .iter()
+            .filter(|m| module.files.contains(&m.source_file))
+            .cloned()
+            .collect();
+
+        let content = generate_module_content(
+            module,
+            files,
+            &large_file_symbols,
+            &module_memory,
+            file_graph,
+        );
+
+        output.add_module(module.slug.clone(), content);
+
+        for file_path in &module.files {
+            let file = match files.iter().find(|f| &f.relative_path == file_path) {
+                Some(f) => f,
+                None => continue,
+            };
+            let symbols = all_symbols.get(file_path).map_or(&[][..], |v| v);
+            if is_complex_file(file, symbols, args.complex_threshold, 50) {
+                let file_memory: Vec<_> = all_memory
+                    .iter()
+                    .filter(|m| &m.source_file == file_path)
+                    .cloned()
+                    .collect();
+                let file_doc = generate_file_doc(file, symbols, &file_memory, &module.slug);
+                let file_slug = file_path_to_slug(&file.relative_path);
+                output.add_file(file_slug, file_doc);
+            }
+        }
+    }
+
+    write_hierarchical(output_path, &output, args.dry_run)
+        .context("Failed to write hierarchical outputs")?;
+
+    if args.verbosity() > 0 && !args.dry_run {
+        eprintln!("\nGenerated hierarchical structure:");
+        eprintln!("  {}/INDEX.md", output_path.display());
+        eprintln!(
+            "  {}/modules/ ({} modules)",
+            output_path.display(),
+            output.modules.len()
+        );
+        if !output.files.is_empty() {
+            eprintln!(
+                "  {}/files/ ({} complex files)",
+                output_path.display(),
+                output.files.len()
+            );
+        }
     }
 
     Ok(())
