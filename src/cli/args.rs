@@ -11,6 +11,19 @@ pub enum Command {
         #[arg(long, default_value = "300")]
         debounce: u64,
     },
+    /// Manage git hooks for automatic regeneration
+    Hooks {
+        #[command(subcommand)]
+        action: HooksAction,
+    },
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum HooksAction {
+    /// Install git hooks (pre-commit, post-checkout, post-merge)
+    Install,
+    /// Remove git hooks
+    Remove,
 }
 
 #[derive(Parser, Debug)]

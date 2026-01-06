@@ -7,7 +7,9 @@ use std::fs;
 use agentmap::analyze::{
     detect_modules, extract_imports, extract_memory_markers, extract_symbols, FileGraph, ModuleInfo,
 };
-use agentmap::cli::{run_update, run_watch, Args, Command};
+use agentmap::cli::{
+    install_hooks, remove_hooks, run_update, run_watch, Args, Command, HooksAction,
+};
 use agentmap::emit::{
     calculate_module_state, current_timestamp, write_hierarchical, CriticalFile, DiffInfo,
     HierarchicalOutput, HubFile, JsonOutput, LargeFileEntry, Manifest, ModuleOutput, ProjectInfo,
@@ -28,6 +30,13 @@ fn main() -> Result<()> {
     match &args.command {
         Some(Command::Update) => return run_update(),
         Some(Command::Watch { debounce }) => return run_watch(&args, *debounce),
+        Some(Command::Hooks { action }) => {
+            let path = args.path.canonicalize().unwrap_or(args.path.clone());
+            return match action {
+                HooksAction::Install => install_hooks(&path),
+                HooksAction::Remove => remove_hooks(&path),
+            };
+        }
         None => {}
     }
 
