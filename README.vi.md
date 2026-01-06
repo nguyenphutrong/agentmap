@@ -9,21 +9,40 @@
 
 ## Công Dụng
 
-agentmap quét codebase và tạo ra 3 file:
+agentmap quét codebase và tạo ra **cấu trúc tài liệu phân cấp** theo module:
 
-| File | Mục đích |
-|------|----------|
-| `outline.md` | Bản đồ symbol cho file lớn (functions, classes, structs với số dòng) |
-| `memory.md` | Các markers được trích xuất (TODO, FIXME, WARNING, SAFETY, business rules) |
-| `AGENTS.md` | Hướng dẫn đọc code cho AI agents (entry points, critical files, rules) |
+```
+.agentmap/
+├── INDEX.md              # L0: Bảng định hướng toàn cục
+├── modules/
+│   └── {module-slug}/
+│       ├── MODULE.md     # L1: Tóm tắt module
+│       ├── outline.md    # L1: Bản đồ symbol cho module
+│       ├── memory.md     # L1: Warnings/TODOs theo module
+│       └── imports.md    # L1: Dependencies cho module
+└── files/
+    └── {file-slug}.md    # L2: Tài liệu chi tiết cho file phức tạp (tùy chọn)
+```
+
+### Content Hierarchy
+
+| Cấp | File | Mục đích | Kích thước |
+|-----|------|----------|------------|
+| L0 | `INDEX.md` | Bảng định hướng tổng quan theo module | O(modules) |
+| L1 | `MODULE.md` | Tóm tắt module, file list, entry points | O(files in module) |
+| L1 | `outline.md` | Bản đồ symbol cho file lớn trong module | O(large files) |
+| L1 | `memory.md` | Warnings và TODOs theo module | O(markers) |
+| L1 | `imports.md` | Phụ thuộc trong module | O(imports) |
+| L2 | `files/*.md` | Tài liệu chi tiết cho file phức tạp | O(symbols) |
 
 ## Tại Sao Cần?
 
 AI coding assistants gặp khó khăn với codebase lớn vì không thể thấy toàn cảnh. agentmap cung cấp:
 
-- **Bản đồ symbol** để AI biết có gì trong file lớn mà không cần đọc toàn bộ
-- **Warnings được trích xuất** để AI không bỏ sót TODO hoặc safety notes quan trọng
-- **Thứ tự đọc** để AI bắt đầu từ đúng entry points
+- **Điều hướng phân cấp** để AI chỉ load module cần thiết
+- **Module detection** để gom file thành các nhóm có ý nghĩa
+- **Symbol maps** để biết có gì trong file lớn mà không đọc toàn bộ
+- **Scoped context** để docs chỉ chứa thông tin liên quan
 
 ## Cài Đặt
 
@@ -47,7 +66,7 @@ cargo build --release
 ### Cơ Bản
 
 ```bash
-# Tạo docs cho thư mục hiện tại
+# Tạo docs cho thư mục hiện tại (hierarchical mode - mặc định)
 agentmap
 
 # Output ra thư mục tùy chỉnh
@@ -60,92 +79,193 @@ agentmap --dry-run
 agentmap -v
 ```
 
-### Các Options
+### Remote Repositories
+
+```bash
+# Phân tích GitHub repo trực tiếp
+agentmap github.com/user/repo
+agentmap https://github.com/vercel/next.js
+
+# Giới hạn depth cho repo lớn
+agentmap --depth 3 github.com/facebook/react
+```
+
+### Git Diff Mode
+
+```bash
+# Chỉ show các file thay đổi từ branch
+agentmap --diff main
+
+# So sánh với commit cụ thể
+agentmap --diff HEAD~5
+```
+
+### JSON Output
+
+```bash
+# Output analysis dưới dạng JSON (cho tooling integration)
+agentmap --json > analysis.json
+
+# Kết hợp với flags khác
+agentmap --json --depth 2 github.com/user/repo
+```
+
+### Options
 
 ```
 Usage: agentmap [OPTIONS] [PATH]
 
 Arguments:
-  [PATH]  Thư mục đích [default: .]
+  [PATH]  Thư mục đích hoặc GitHub URL [default: .]
 
 Options:
-  -o, --output <OUTPUT>        Thư mục output [default: .agentmap]
-  -t, --threshold <THRESHOLD>  Ngưỡng số dòng cho file "lớn" [default: 500]
-  -i, --ignore <IGNORE>        Patterns bổ sung để bỏ qua
-  -l, --lang <LANG>            Lọc theo ngôn ngữ (rust, python, javascript, go)
-      --no-gitignore           Không tuân theo .gitignore
-      --dry-run                Xem trước mà không ghi file
-  -v, --verbose...             Tăng mức chi tiết (-v, -vv, -vvv)
-  -q, --quiet                  Không hiển thị output
-  -h, --help                   In help
-  -V, --version                In version
+  -o, --output <OUTPUT>              Thư mục output [default: .agentmap]
+  -t, --threshold <THRESHOLD>        Ngưỡng số dòng cho file "lớn" [default: 500]
+  -c, --complex-threshold <COMPLEX>  Ngưỡng symbol cho L2 file docs [default: 30]
+  -d, --depth <DEPTH>                Max directory depth (0 = unlimited)
+      --diff <REF>                   So sánh với git branch/commit
+      --json                         Output JSON ra stdout
+  -i, --ignore <IGNORE>              Patterns bổ sung để bỏ qua
+  -l, --lang <LANG>                  Lọc theo ngôn ngữ
+      --no-gitignore                 Không tuân theo .gitignore
+      --dry-run                      Xem trước mà không ghi file
+  -v, --verbose...                   Tăng mức chi tiết (-v, -vv, -vvv)
+  -q, --quiet                        Không hiển thị output
+  -h, --help                         In help
+  -V, --version                      In version
 ```
+
+## Module Detection
+
+agentmap tự động phát hiện module boundary dựa vào quy ước theo ngôn ngữ:
+
+| Ngôn ngữ | Boundary rõ ràng | Ví dụ |
+|----------|------------------|-------|
+| Rust | `mod.rs`, `lib.rs` | `src/analyze/mod.rs` → module `src-analyze` |
+| Python | `__init__.py` | `src/utils/__init__.py` → module `src-utils` |
+| JavaScript/TypeScript | `index.{js,ts,tsx}` | `src/components/index.ts` → module `src-components` |
+| Any | 5+ source files trong thư mục | `src/helpers/` có 5+ files → implicit module |
+
+### Module Slug Naming
+
+Đường dẫn thư mục được chuyển thành slug bằng dấu gạch ngang:
+- `src/analyze/lang` → `src-analyze-lang`
+- `lib/utils` → `lib-utils`
 
 ## Ví Dụ Output
 
-### outline.md
+### INDEX.md (L0 Global)
 
 ```markdown
-## src/analyze/parser.rs (450 lines)
+# Project
+
+## Reading Protocol
+
+**Start here**, then navigate to specific modules.
+
+1. Read this INDEX for overview
+2. Go to relevant `modules/{name}/MODULE.md`
+3. Check module's `outline.md` for large files
+4. Check module's `memory.md` for warnings
+
+## Entry Points
+
+- `src/main.rs`
+- `src/lib.rs`
+
+## Modules
+
+| Module | Type | Files | Warnings | Hub |
+| ------ | ---- | ----- | -------- | --- |
+| [src](modules/src/MODULE.md) | rust | 2 | - |  |
+| [src/analyze](modules/src-analyze/MODULE.md) | rust | 5 | ⚠️ 2 |  |
+| [src/generate](modules/src-generate/MODULE.md) | rust | 8 | - | 🔗 |
+```
+
+### MODULE.md (L1 Module)
+
+```markdown
+# Module: src/analyze
+
+[← Back to INDEX](../../INDEX.md)
+
+**Type:** rust | **Files:** 5
+
+**Entry point:** `src/analyze/mod.rs`
+
+## Files
+
+| File | Lines | Large |
+| ---- | ----- | ----- |
+| `src/analyze/graph.rs` | 98 |  |
+| `src/analyze/parser.rs` | 650 | 📄 |
+| `src/analyze/mod.rs` | 10 |  |
+
+## Child Modules
+
+- [src-analyze-lang](../src-analyze-lang/MODULE.md)
+
+## Documentation
+
+- [outline.md](outline.md) - Symbol maps for large files
+- [memory.md](memory.md) - Warnings and TODOs
+- [imports.md](imports.md) - Dependencies
+```
+
+### outline.md (L1 Module-Scoped)
+
+```markdown
+# Outline: src/analyze
+
+[← MODULE.md](MODULE.md) | [← INDEX.md](../../INDEX.md)
+
+## src/analyze/parser.rs (650 lines)
 
 | Line | Kind | Name | Visibility |
 | ---- | ---- | ---- | ---------- |
 | 15 | fn | parse_symbols | pub |
 | 89 | fn | extract_functions | (private) |
 | 156 | struct | ParseResult | pub |
-
-### Key Entry Points
-- `pub fn parse_symbols(content: &str) -> Vec<Symbol>` (L15)
 ```
 
-### memory.md
+### memory.md (L1 Module-Scoped)
 
 ```markdown
+# Memory: src/analyze
+
+[← MODULE.md](MODULE.md) | [← INDEX.md](../../INDEX.md)
+
 ## ⚠️ Warnings
 
-### 🔴 `WARNING` (src/auth.rs:42)
-> Không bao giờ lưu passwords dạng plain text
+### 🔴 `WARNING` (src/analyze/parser.rs:42)
+> Edge case not handled for nested generics
 
 ## 🔧 Technical Debt
 
-### 🟡 `TODO` (src/api.rs:128)
-> Implement rate limiting trước khi lên production
+### 🟡 `TODO` (src/analyze/graph.rs:128)
+> Optimize cycle detection algorithm
 ```
 
-### AGENTS.md
+## Supported Languages
 
-```markdown
-## Reading Protocol
-
-**MUST**:
-- Đọc `outline.md` trước khi khám phá file lớn
-- Kiểm tra `memory.md` để biết warnings và business rules
-
-## Entry Points
-- `src/main.rs`
-- `src/lib.rs`
-
-## Large Files (Tham khảo outline.md)
-| File | Lines |
-| ---- | ----- |
-| `src/parser.rs` | 892 |
-```
-
-## Ngôn Ngữ Hỗ Trợ
-
-| Ngôn ngữ | Symbol Extraction | Memory Markers |
-|----------|-------------------|----------------|
-| Rust | ✅ Functions, structs, enums, traits, impls | ✅ |
-| Python | ✅ Functions, classes, methods | ✅ |
-| JavaScript/TypeScript | ✅ Functions, classes, arrow functions | ✅ |
-| Go | ✅ Functions, structs, interfaces, methods | ✅ |
+| Language | Symbol Extraction | Import Graph | Memory Markers | Module Detection |
+|----------|-------------------|--------------|----------------|------------------|
+| Rust | ✅ Functions, structs, enums, traits, impls | ✅ | ✅ | ✅ `mod.rs` |
+| Python | ✅ Functions, classes, methods | ✅ | ✅ | ✅ `__init__.py` |
+| JavaScript/TypeScript | ✅ Functions, classes, arrow functions | ✅ | ✅ | ✅ `index.{js,ts}` |
+| Go | ✅ Functions, structs, interfaces, methods | ✅ | ✅ | ✅ implicit |
+| Swift | ✅ Functions, classes, structs, enums, protocols | ✅ | ✅ | ✅ implicit |
+| Dart | ✅ Functions, classes, mixins, extensions | ✅ | ✅ | ✅ implicit |
+| Ruby | ✅ Methods, classes, modules | ✅ | ✅ | ✅ implicit |
+| C# | ✅ Methods, classes, structs, interfaces | ✅ | ✅ | ✅ implicit |
+| Java | ✅ Methods, classes, interfaces, enums | ✅ | ✅ | ✅ implicit |
 
 ## Memory Markers
 
 agentmap trích xuất các comment patterns sau:
 
-| Pattern | Danh mục | Độ ưu tiên |
-|---------|----------|------------|
+| Pattern | Category | Priority |
+|---------|----------|----------|
 | `TODO`, `FIXME`, `XXX`, `BUG`, `HACK` | Technical Debt | Medium |
 | `WARNING`, `WARN` | Warnings | High |
 | `SAFETY`, `INVARIANT` | Safety | High |
@@ -161,14 +281,30 @@ Thêm vào AI instructions của project:
 
 ```
 Trước khi làm việc với codebase này, đọc:
-1. .agentmap/AGENTS.md - hướng dẫn đọc code
-2. .agentmap/memory.md - warnings và TODOs
-3. .agentmap/outline.md - điều hướng file lớn
+1. .agentmap/INDEX.md - tổng quan và điều hướng module
+2. Navigate to module's MODULE.md để biết chi tiết
+3. Kiểm tra module's memory.md trước khi edit
+4. Consult module's outline.md để điều hướng file lớn
 ```
 
 ### GitHub Copilot
 
 Include `.agentmap/` trong workspace context.
+
+### JSON Integration
+
+Cho programmatic access:
+
+```bash
+agentmap --json | jq '.modules[] | {slug, file_count, warning_count}'
+```
+
+JSON output gồm:
+- `modules[]` - Array module metadata (slug, path, file_count, warning_count, symbol_count, is_hub)
+- `files[]` - Tất cả scanned files và metadata
+- `memory[]` - Tất cả memory markers và locations
+- `entry_points[]` - Detected entry points
+- `hub_files[]` - Files được import bởi 3+ others
 
 ## Development
 

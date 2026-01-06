@@ -72,9 +72,6 @@ agentmap
 # Output to custom directory
 agentmap -o docs/ai
 
-# Use legacy flat structure (v0.1 compatible)
-agentmap --legacy
-
 # Preview without writing files
 agentmap --dry-run
 
@@ -128,7 +125,6 @@ Options:
   -d, --depth <DEPTH>                Max directory depth (0 = unlimited) [default: 0]
       --diff <REF>                   Compare against git branch/commit
       --json                         Output JSON to stdout instead of markdown files
-      --legacy                       Use legacy flat structure (v0.1 compatible)
   -i, --ignore <IGNORE>              Additional patterns to ignore
   -l, --lang <LANG>                  Filter by language
       --no-gitignore                 Don't respect .gitignore
@@ -309,29 +305,6 @@ JSON output includes:
 - `memory[]` - All memory markers with locations
 - `entry_points[]` - Detected entry points
 - `hub_files[]` - Files imported by 3+ others
-
-## Migration from v0.1
-
-v0.2 introduces hierarchical output. To use the legacy flat structure:
-
-```bash
-agentmap --legacy
-```
-
-### Key Changes
-
-| v0.1 | v0.2 |
-|------|------|
-| `.agentmap/AGENTS.md` | `.agentmap/INDEX.md` |
-| `.agentmap/outline.md` (global) | `.agentmap/modules/{slug}/outline.md` (per-module) |
-| `.agentmap/memory.md` (global) | `.agentmap/modules/{slug}/memory.md` (per-module) |
-| `.agentmap/imports.md` (global) | `.agentmap/modules/{slug}/imports.md` (per-module) |
-
-### Benefits of v0.2
-
-- **Smaller context per query** - AI loads only relevant module docs
-- **Better scalability** - O(module) routing instead of O(files)
-- **Clearer organization** - Related files grouped together
 
 ## Development
 

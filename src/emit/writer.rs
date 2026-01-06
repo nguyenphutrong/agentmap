@@ -1,19 +1,9 @@
 //! Output writer for hierarchical content structure.
-//!
-//! Supports both legacy flat output and new hierarchical module-based output.
 
 use anyhow::Result;
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
-
-/// Legacy flat output bundle (for backward compatibility)
-pub struct OutputBundle {
-    pub outline: String,
-    pub memory: String,
-    pub agents_md: String,
-    pub imports: String,
-}
 
 /// Content for a single module
 #[derive(Debug, Clone, Default)]
@@ -85,27 +75,6 @@ impl HierarchicalOutput {
     }
 }
 
-/// Write legacy flat output (backward compatibility)
-pub fn write_outputs(output_dir: &Path, bundle: &OutputBundle, dry_run: bool) -> Result<()> {
-    if dry_run {
-        println!("Dry run mode - would write to: {}", output_dir.display());
-        println!("  outline.md: {} bytes", bundle.outline.len());
-        println!("  memory.md: {} bytes", bundle.memory.len());
-        println!("  imports.md: {} bytes", bundle.imports.len());
-        println!("  AGENTS.md: {} bytes", bundle.agents_md.len());
-        return Ok(());
-    }
-
-    fs::create_dir_all(output_dir)?;
-
-    fs::write(output_dir.join("outline.md"), &bundle.outline)?;
-    fs::write(output_dir.join("memory.md"), &bundle.memory)?;
-    fs::write(output_dir.join("imports.md"), &bundle.imports)?;
-    fs::write(output_dir.join("AGENTS.md"), &bundle.agents_md)?;
-
-    Ok(())
-}
-
 /// Write hierarchical output structure
 pub fn write_hierarchical(
     output_dir: &Path,
@@ -116,8 +85,6 @@ pub fn write_hierarchical(
         print_hierarchical_dry_run(output_dir, output);
         return Ok(());
     }
-
-    cleanup_legacy_files(output_dir)?;
 
     fs::create_dir_all(output_dir)?;
 
@@ -213,27 +180,6 @@ fn print_hierarchical_dry_run(output_dir: &Path, output: &HierarchicalOutput) {
     }
 
     println!("\nTotal: {} files", output.file_count());
-}
-
-fn cleanup_legacy_files(output_dir: &Path) -> Result<()> {
-    if !output_dir.exists() {
-        return Ok(());
-    }
-
-    let legacy_files = ["AGENTS.md", "outline.md", "memory.md", "imports.md"];
-    for file in legacy_files {
-        let path = output_dir.join(file);
-        if path.exists() {
-            fs::remove_file(path)?;
-        }
-    }
-
-    Ok(())
-}
-
-/// Check if output directory has old flat structure
-pub fn has_legacy_structure(output_dir: &Path) -> bool {
-    output_dir.join("AGENTS.md").exists() && !output_dir.join("INDEX.md").exists()
 }
 
 /// Convert module slug to valid directory name

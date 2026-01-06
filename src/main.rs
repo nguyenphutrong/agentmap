@@ -9,14 +9,12 @@ use agentmap::analyze::{
 };
 use agentmap::cli::Args;
 use agentmap::emit::{
-    calculate_module_state, current_timestamp, write_hierarchical, write_outputs, CriticalFile,
-    DiffInfo, HierarchicalOutput, HubFile, JsonOutput, LargeFileEntry, Manifest, ModuleOutput,
-    OutputBundle, ProjectInfo,
+    calculate_module_state, current_timestamp, write_hierarchical, CriticalFile, DiffInfo,
+    HierarchicalOutput, HubFile, JsonOutput, LargeFileEntry, Manifest, ModuleOutput, ProjectInfo,
 };
 use agentmap::generate::{
-    detect_entry_points, file_path_to_slug, generate_agents_md, generate_file_doc,
-    generate_imports, generate_index_md, generate_memory, generate_module_content,
-    generate_outline, get_critical_files, is_complex_file, AgentsConfig, IndexConfig,
+    detect_entry_points, file_path_to_slug, generate_file_doc, generate_index_md,
+    generate_module_content, get_critical_files, is_complex_file, IndexConfig,
 };
 use agentmap::scan::{
     cleanup_temp, clone_to_temp, get_default_branch, get_diff_files, is_git_repo, scan_directory,
@@ -136,9 +134,7 @@ fn run_analysis(args: &Args, work_path: &std::path::Path) -> Result<()> {
         eprintln!("  Memory markers found: {}", all_memory.len());
     }
 
-    let critical_files = get_critical_files(&all_memory);
     let entry_points = detect_entry_points(&files);
-    let large_files_refs: Vec<_> = large_file_symbols.iter().map(|(f, _)| f.clone()).collect();
     let hub_files = file_graph.hub_files();
 
     if args.verbosity() > 0 && !args.json {
@@ -161,7 +157,6 @@ fn run_analysis(args: &Args, work_path: &std::path::Path) -> Result<()> {
             &large_file_symbols,
             &all_memory,
             &entry_points,
-            &critical_files,
             &hub_files,
             diff_stats.as_ref(),
             &diff_base_ref,
@@ -174,34 +169,17 @@ fn run_analysis(args: &Args, work_path: &std::path::Path) -> Result<()> {
         work_path.join(&args.output)
     };
 
-    if args.legacy {
-        run_legacy_output(
-            args,
-            &output_path,
-            &large_file_symbols,
-            &all_memory,
-            &file_graph,
-            &large_files_refs,
-            &critical_files,
-            &entry_points,
-            &hub_files,
-            diff_stats.as_deref(),
-            &diff_base_ref,
-        )
-    } else {
-        run_hierarchical_output(
-            args,
-            work_path,
-            &output_path,
-            &files,
-            &all_symbols,
-            &all_memory,
-            &file_graph,
-            &entry_points,
-            &hub_files,
-            &critical_files,
-        )
-    }
+    run_hierarchical_output(
+        args,
+        work_path,
+        &output_path,
+        &files,
+        &all_symbols,
+        &all_memory,
+        &file_graph,
+        &entry_points,
+        &hub_files,
+    )
 }
 
 fn run_json_output(
@@ -211,11 +189,11 @@ fn run_json_output(
     large_file_symbols: &[(FileEntry, Vec<Symbol>)],
     all_memory: &[MemoryEntry],
     entry_points: &[String],
-    critical_files: &[(String, usize)],
     hub_files: &[(String, usize)],
     diff_stats: Option<&Vec<DiffStat>>,
     diff_base_ref: &str,
 ) -> Result<()> {
+    let critical_files = get_critical_files(all_memory);
     let module_outputs: Vec<ModuleOutput> = modules
         .iter()
         .map(|m| ModuleOutput::from_module_info(m, all_memory, large_file_symbols, hub_files))
@@ -268,59 +246,6 @@ fn run_json_output(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn run_legacy_output(
-    args: &Args,
-    output_path: &std::path::Path,
-    large_file_symbols: &[(FileEntry, Vec<Symbol>)],
-    all_memory: &[MemoryEntry],
-    file_graph: &FileGraph,
-    large_files_refs: &[FileEntry],
-    critical_files: &[(String, usize)],
-    entry_points: &[String],
-    hub_files: &[(String, usize)],
-    diff_stats: Option<&[DiffStat]>,
-    diff_base_ref: &str,
-) -> Result<()> {
-    let outline = generate_outline(large_file_symbols);
-    let memory = generate_memory(all_memory);
-    let imports = generate_imports(file_graph);
-
-    let agents_config = AgentsConfig {
-        large_files: large_files_refs,
-        critical_files,
-        entry_points,
-        hub_files,
-        diff_stats,
-        diff_base: if diff_stats.is_some() {
-            Some(diff_base_ref)
-        } else {
-            None
-        },
-    };
-
-    let agents_md = generate_agents_md(&agents_config);
-
-    let bundle = OutputBundle {
-        outline,
-        memory,
-        imports,
-        agents_md,
-    };
-
-    write_outputs(output_path, &bundle, args.dry_run).context("Failed to write outputs")?;
-
-    if args.verbosity() > 0 && !args.dry_run {
-        eprintln!("\nGenerated (legacy mode):");
-        eprintln!("  {}/outline.md", output_path.display());
-        eprintln!("  {}/memory.md", output_path.display());
-        eprintln!("  {}/imports.md", output_path.display());
-        eprintln!("  {}/AGENTS.md", output_path.display());
-    }
-
-    Ok(())
-}
-
-#[allow(clippy::too_many_arguments)]
 fn run_hierarchical_output(
     args: &Args,
     _work_path: &std::path::Path,
@@ -331,7 +256,6 @@ fn run_hierarchical_output(
     file_graph: &FileGraph,
     entry_points: &[String],
     hub_files: &[(String, usize)],
-    _critical_files: &[(String, usize)],
 ) -> Result<()> {
     let modules = detect_modules(files);
 

@@ -4,7 +4,7 @@
 //! regardless of total file count in the repository.
 
 use crate::analyze::ModuleInfo;
-use crate::types::MemoryEntry;
+use crate::types::{FileEntry, MemoryEntry};
 
 /// Configuration for INDEX.md generation
 pub struct IndexConfig<'a> {
@@ -140,11 +140,52 @@ fn count_module_warnings(module: &ModuleInfo, entries: &[MemoryEntry]) -> usize 
         .count()
 }
 
+/// Detect entry point files from the file list
+pub fn detect_entry_points(files: &[FileEntry]) -> Vec<String> {
+    let entry_patterns = [
+        "main.rs",
+        "lib.rs",
+        "mod.rs",
+        "index.js",
+        "index.ts",
+        "index.tsx",
+        "main.py",
+        "__init__.py",
+        "app.py",
+        "main.go",
+        "cmd/main.go",
+    ];
+
+    let mut entry_points: Vec<String> = files
+        .iter()
+        .filter(|f| {
+            entry_patterns.iter().any(|pat| {
+                f.relative_path.ends_with(pat)
+                    || f.relative_path == *pat
+                    || f.path
+                        .file_name()
+                        .map(|n| n.to_string_lossy())
+                        .is_some_and(|n| *pat == n)
+            })
+        })
+        .map(|f| f.relative_path.clone())
+        .collect();
+
+    entry_points.sort();
+    entry_points.dedup();
+
+    if entry_points.iter().any(|p| p.ends_with("lib.rs")) {
+        entry_points.retain(|p| !p.ends_with("mod.rs") || p == "src/mod.rs");
+    }
+
+    entry_points
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::analyze::BoundaryType;
-    use crate::types::{MemoryKind, Priority};
+    use crate::types::{Language, MemoryKind, Priority};
 
     fn make_module(path: &str, files: Vec<String>) -> ModuleInfo {
         let mut module = ModuleInfo::new(path, BoundaryType::RustModule, None);
@@ -257,5 +298,31 @@ mod tests {
         let result = generate_index_md(&config);
 
         assert!(result.contains("_No modules detected._"));
+    }
+
+    fn make_file(relative_path: &str, line_count: usize) -> FileEntry {
+        use std::path::PathBuf;
+        FileEntry {
+            path: PathBuf::from(relative_path),
+            relative_path: relative_path.to_string(),
+            extension: relative_path.split('.').last().map(|s| s.to_string()),
+            language: Language::Rust,
+            size_bytes: 1000,
+            line_count,
+            is_large: line_count > 500,
+        }
+    }
+
+    #[test]
+    fn test_entry_point_detection() {
+        let files = vec![
+            make_file("src/main.rs", 100),
+            make_file("src/lib.rs", 200),
+            make_file("src/utils/mod.rs", 50),
+        ];
+
+        let entries = detect_entry_points(&files);
+        assert!(entries.contains(&"src/main.rs".to_string()));
+        assert!(entries.contains(&"src/lib.rs".to_string()));
     }
 }
