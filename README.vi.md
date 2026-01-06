@@ -46,20 +46,29 @@ AI coding assistants gặp khó khăn với codebase lớn vì không thể th�
 
 ## Cài Đặt
 
-### Từ Source
+### Cài Nhanh (Khuyến nghị)
 
 ```bash
-cargo install --path .
+curl -fsSL https://raw.githubusercontent.com/nguyenphutrong/agentmap/main/scripts/install.sh | sh
 ```
 
-### Build Local
+### Từ crates.io
+
+```bash
+cargo install agentmap
+```
+
+### Từ Source
 
 ```bash
 git clone https://github.com/nguyenphutrong/agentmap
 cd agentmap
-cargo build --release
-./target/release/agentmap --help
+cargo install --path .
 ```
+
+### Tải Thủ Công
+
+Tải prebuilt binaries từ [GitHub Releases](https://github.com/nguyenphutrong/agentmap/releases).
 
 ## Cách Dùng
 

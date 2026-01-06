@@ -12,15 +12,11 @@ pub fn generate_outline(files: &[(FileEntry, Vec<Symbol>)]) -> String {
 
     output.push_str("## Table of Contents\n\n");
     for (file, symbols) in files {
-        let anchor = file
-            .relative_path
-            .replace('/', "-")
-            .replace('.', "-")
-            .to_lowercase();
+        let anchor = file.relative_path.replace(['/', '.'], "-").to_lowercase();
         output.push_str(&format!(
-            "- [{}]({}) ({} lines, {} symbols)\n",
+            "- [{}](#{}) ({} lines, {} symbols)\n",
             file.relative_path,
-            format!("#{}", anchor),
+            anchor,
             file.line_count,
             symbols.len()
         ));
@@ -61,11 +57,7 @@ pub fn generate_outline(files: &[(FileEntry, Vec<Symbol>)]) -> String {
             if !key_entries.is_empty() {
                 output.push_str("### Key Entry Points\n\n");
                 for sym in key_entries {
-                    let sig = sym
-                        .signature
-                        .as_ref()
-                        .map(|s| s.as_str())
-                        .unwrap_or(&sym.name);
+                    let sig = sym.signature.as_deref().unwrap_or(&sym.name);
                     output.push_str(&format!("- `{}` (L{})\n", sig, sym.line_range.start));
                 }
                 output.push('\n');

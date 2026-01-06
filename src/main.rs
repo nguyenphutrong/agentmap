@@ -182,6 +182,7 @@ fn run_analysis(args: &Args, work_path: &std::path::Path) -> Result<()> {
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 fn run_json_output(
     work_path: &std::path::Path,
     files: &[FileEntry],

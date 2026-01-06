@@ -27,11 +27,6 @@ static FUNCTION_PATTERN: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r"(?m)^(static\s+)?(\w+(?:<[^>]+>)?)\s+(\w+)\s*\([^)]*\)(?:\s*async)?\s*\{").unwrap()
 });
 
-// factory ClassName.namedConstructor(params) { or ClassName(params) {
-static CONSTRUCTOR_PATTERN: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"(?m)^\s*(factory\s+)?(\w+)(?:\.(\w+))?\s*\([^)]*\)(?:\s*:\s*[^{]+)?\s*\{").unwrap()
-});
-
 // get propertyName { or Type get propertyName {
 static GETTER_PATTERN: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"(?m)^\s*(?:\w+\s+)?get\s+(\w+)\s*\{").unwrap());

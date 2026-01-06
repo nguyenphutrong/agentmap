@@ -46,20 +46,29 @@ AI coding assistants struggle with large codebases because they can't see the fu
 
 ## Installation
 
-### From Source
+### Quick Install (Recommended)
 
 ```bash
-cargo install --path .
+curl -fsSL https://raw.githubusercontent.com/nguyenphutrong/agentmap/main/scripts/install.sh | sh
 ```
 
-### Build Locally
+### From crates.io
+
+```bash
+cargo install agentmap
+```
+
+### From Source
 
 ```bash
 git clone https://github.com/nguyenphutrong/agentmap
 cd agentmap
-cargo build --release
-./target/release/agentmap --help
+cargo install --path .
 ```
+
+### Manual Download
+
+Download prebuilt binaries from [GitHub Releases](https://github.com/nguyenphutrong/agentmap/releases).
 
 ## Usage
 
