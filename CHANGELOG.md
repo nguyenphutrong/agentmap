@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-01-06
+
+### Added
+
+- **Smart file generation** - Reduce file clutter for small/medium projects:
+  - Skip empty `outline.md` when no large files exist
+  - Skip empty `memory.md` when no TODO/WARNING markers exist
+  - Auto-merge small content (<500 bytes) inline into `MODULE.md`
+- **CI/CD** - Automatic publish to crates.io on release
+
+### Changed
+
+- `MODULE.md` now conditionally shows Documentation section (only if separate files exist)
+- Small imports/outline/memory content inlined with `---` separator
+
+### Performance
+
+- Up to **70% reduction** in generated files for typical projects (33 → 10 files)
+
 ## [0.2.0] - 2026-01-06
 
 Initial release.
@@ -18,9 +37,6 @@ Initial release.
 - **Memory marker detection** - TODO, FIXME, WARNING, SAFETY, RULE, DEPRECATED, etc.
 - **Hub file detection** - Identify high-impact files imported by 3+ others
 - **Import graph visualization** - Show intra/inter-module dependencies
-- **Smart file generation**:
-  - Skip empty `outline.md` and `memory.md` files
-  - Auto-merge small content (<500 bytes) into `MODULE.md`
 - **Git diff mode** (`--diff`) - Filter output to changed files only
 - **JSON output** (`--json`) - Machine-readable output for tooling integration
 - **Remote repository support** - Analyze GitHub repositories directly via URL
