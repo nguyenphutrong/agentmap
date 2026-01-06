@@ -16,7 +16,13 @@ static INTERFACE_PATTERN: Lazy<Regex> =
 
 static CONST_PATTERN: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)^const\s+(\w+)\s*=").unwrap());
 
-static VAR_PATTERN: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?m)^var\s+(\w+)\s+").unwrap());
+static IMPORT_PATTERN: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(?m)^\s*"([^"]+)"\s*$"#).unwrap());
+
+static IMPORT_BLOCK_PATTERN: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"(?s)import\s*\(([^)]+)\)").unwrap());
+
+static SINGLE_IMPORT_PATTERN: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"(?m)^import\s+"([^"]+)""#).unwrap());
 
 impl LanguageParser for GoParser {
     fn parse_symbols(&self, content: &str) -> Vec<Symbol> {
@@ -133,6 +139,42 @@ impl LanguageParser for GoParser {
         symbols.sort_by_key(|s| s.line_range.start);
         symbols
     }
+
+    fn parse_imports(&self, content: &str) -> Vec<String> {
+        let mut imports = Vec::new();
+
+        for cap in SINGLE_IMPORT_PATTERN.captures_iter(content) {
+            if let Some(m) = cap.get(1) {
+                let path = extract_go_package_name(m.as_str());
+                if !imports.contains(&path) {
+                    imports.push(path);
+                }
+            }
+        }
+
+        for cap in IMPORT_BLOCK_PATTERN.captures_iter(content) {
+            if let Some(block) = cap.get(1) {
+                for line_cap in IMPORT_PATTERN.captures_iter(block.as_str()) {
+                    if let Some(m) = line_cap.get(1) {
+                        let path = extract_go_package_name(m.as_str());
+                        if !imports.contains(&path) {
+                            imports.push(path);
+                        }
+                    }
+                }
+            }
+        }
+
+        imports
+    }
+}
+
+fn extract_go_package_name(import_path: &str) -> String {
+    import_path
+        .rsplit('/')
+        .next()
+        .unwrap_or(import_path)
+        .to_string()
 }
 
 fn line_number_at_offset(content: &str, offset: usize) -> usize {

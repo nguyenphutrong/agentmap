@@ -11,6 +11,12 @@ static DEF_PATTERN: Lazy<Regex> =
 static CLASS_PATTERN: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"(?m)^([ \t]*)class\s+(\w+)").unwrap());
 
+static IMPORT_PATTERN: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"(?m)^[ \t]*import\s+([\w.]+)").unwrap());
+
+static FROM_IMPORT_PATTERN: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"(?m)^[ \t]*from\s+([\w.]+)\s+import").unwrap());
+
 impl LanguageParser for PythonParser {
     fn parse_symbols(&self, content: &str) -> Vec<Symbol> {
         let mut symbols = Vec::new();
@@ -70,6 +76,30 @@ impl LanguageParser for PythonParser {
 
         symbols.sort_by_key(|s| s.line_range.start);
         symbols
+    }
+
+    fn parse_imports(&self, content: &str) -> Vec<String> {
+        let mut imports = Vec::new();
+
+        for cap in IMPORT_PATTERN.captures_iter(content) {
+            if let Some(m) = cap.get(1) {
+                let module = m.as_str().split('.').next().unwrap_or("").to_string();
+                if !module.is_empty() && !imports.contains(&module) {
+                    imports.push(module);
+                }
+            }
+        }
+
+        for cap in FROM_IMPORT_PATTERN.captures_iter(content) {
+            if let Some(m) = cap.get(1) {
+                let module = m.as_str().split('.').next().unwrap_or("").to_string();
+                if !module.is_empty() && !imports.contains(&module) {
+                    imports.push(module);
+                }
+            }
+        }
+
+        imports
     }
 }
 

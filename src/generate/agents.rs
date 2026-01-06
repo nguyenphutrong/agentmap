@@ -4,6 +4,7 @@ pub fn generate_agents_md(
     large_files: &[FileEntry],
     critical_files: &[(String, usize)],
     entry_points: &[String],
+    hub_files: &[(String, usize)],
 ) -> String {
     let mut output = String::new();
 
@@ -60,6 +61,19 @@ pub fn generate_agents_md(
         output.push_str("| ---- | --------------------- |\n");
         for (path, count) in critical_files {
             output.push_str(&format!("| `{}` | {} |\n", path, count));
+        }
+        output.push_str("\n");
+    }
+
+    if !hub_files.is_empty() {
+        output.push_str("## Hub Files (High Import Count)\n\n");
+        output.push_str(
+            "These files are imported by many others. Changes here have wide impact:\n\n",
+        );
+        output.push_str("| File | Imported By |\n");
+        output.push_str("| ---- | ----------- |\n");
+        for (path, count) in hub_files {
+            output.push_str(&format!("| `{}` | {} files |\n", path, count));
         }
         output.push_str("\n");
     }
@@ -130,7 +144,7 @@ mod tests {
 
     #[test]
     fn test_empty_agents_md() {
-        let result = generate_agents_md(&[], &[], &[]);
+        let result = generate_agents_md(&[], &[], &[], &[]);
         assert!(result.contains("# AGENTS.md"));
         assert!(result.contains("Reading Protocol"));
     }
@@ -138,9 +152,21 @@ mod tests {
     #[test]
     fn test_with_large_files() {
         let large = vec![make_file("src/big.rs", 1000)];
-        let result = generate_agents_md(&large, &[], &[]);
+        let result = generate_agents_md(&large, &[], &[], &[]);
         assert!(result.contains("Large Files"));
         assert!(result.contains("src/big.rs"));
+    }
+
+    #[test]
+    fn test_with_hub_files() {
+        let hubs = vec![
+            ("src/utils.rs".to_string(), 5),
+            ("src/types.rs".to_string(), 3),
+        ];
+        let result = generate_agents_md(&[], &[], &[], &hubs);
+        assert!(result.contains("Hub Files"));
+        assert!(result.contains("src/utils.rs"));
+        assert!(result.contains("5 files"));
     }
 
     #[test]

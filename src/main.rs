@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use std::fs;
 
-use agentmap::analyze::{extract_memory_markers, extract_symbols};
+use agentmap::analyze::{extract_imports, extract_memory_markers, extract_symbols, FileGraph};
 use agentmap::cli::Args;
 use agentmap::emit::{write_outputs, OutputBundle};
 use agentmap::generate::{
@@ -31,6 +31,7 @@ fn main() -> Result<()> {
 
     let mut all_memory: Vec<MemoryEntry> = Vec::new();
     let mut large_file_symbols: Vec<(FileEntry, Vec<Symbol>)> = Vec::new();
+    let mut file_graph = FileGraph::new();
 
     for file in &files {
         let content = match fs::read_to_string(&file.path) {
@@ -40,6 +41,9 @@ fn main() -> Result<()> {
 
         let memory_entries = extract_memory_markers(&content, &file.relative_path);
         all_memory.extend(memory_entries);
+
+        let imports = extract_imports(file, &content);
+        file_graph.add_file(&file.relative_path, imports);
 
         if file.is_large {
             let symbols = extract_symbols(file, &content);
@@ -62,8 +66,18 @@ fn main() -> Result<()> {
     let critical_files = get_critical_files(&all_memory);
     let entry_points = detect_entry_points(&files);
     let large_files_refs: Vec<_> = large_file_symbols.iter().map(|(f, _)| f.clone()).collect();
+    let hub_files = file_graph.hub_files();
 
-    let agents_md = generate_agents_md(&large_files_refs, &critical_files, &entry_points);
+    if args.verbosity() > 0 {
+        eprintln!("  Hub files (3+ importers): {}", hub_files.len());
+    }
+
+    let agents_md = generate_agents_md(
+        &large_files_refs,
+        &critical_files,
+        &entry_points,
+        &hub_files,
+    );
 
     let bundle = OutputBundle {
         outline,

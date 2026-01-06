@@ -28,6 +28,11 @@ use crate::types::{Language, Symbol};
 
 pub trait LanguageParser {
     fn parse_symbols(&self, content: &str) -> Vec<Symbol>;
+
+    fn parse_imports(&self, content: &str) -> Vec<String> {
+        let _ = content;
+        Vec::new()
+    }
 }
 
 pub fn get_parser(language: Language) -> Option<Box<dyn LanguageParser>> {

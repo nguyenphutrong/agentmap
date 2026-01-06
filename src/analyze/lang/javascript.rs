@@ -26,8 +26,13 @@ static INTERFACE_PATTERN: Lazy<Regex> =
 static TYPE_PATTERN: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"(?m)^[ \t]*(export\s+)?type\s+(\w+)\s*=").unwrap());
 
-static CONST_PATTERN: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"(?m)^[ \t]*(export\s+)?const\s+(\w+)\s*:\s*[^=]+=\s*[^(]").unwrap());
+static IMPORT_PATTERN: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r#"(?m)^[ \t]*import\s+(?:(?:\{[^}]*\}|[\w*]+)\s+from\s+)?['"]([^'"]+)['"]"#)
+        .unwrap()
+});
+
+static REQUIRE_PATTERN: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r#"require\s*\(\s*['"]([^'"]+)['"]\s*\)"#).unwrap());
 
 impl LanguageParser for JavaScriptParser {
     fn parse_symbols(&self, content: &str) -> Vec<Symbol> {
@@ -166,6 +171,30 @@ impl LanguageParser for JavaScriptParser {
 
         symbols.sort_by_key(|s| s.line_range.start);
         symbols
+    }
+
+    fn parse_imports(&self, content: &str) -> Vec<String> {
+        let mut imports = Vec::new();
+
+        for cap in IMPORT_PATTERN.captures_iter(content) {
+            if let Some(m) = cap.get(1) {
+                let path = m.as_str().to_string();
+                if !imports.contains(&path) {
+                    imports.push(path);
+                }
+            }
+        }
+
+        for cap in REQUIRE_PATTERN.captures_iter(content) {
+            if let Some(m) = cap.get(1) {
+                let path = m.as_str().to_string();
+                if !imports.contains(&path) {
+                    imports.push(path);
+                }
+            }
+        }
+
+        imports
     }
 }
 

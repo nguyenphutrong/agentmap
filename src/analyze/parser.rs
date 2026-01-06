@@ -7,3 +7,10 @@ pub fn extract_symbols(file: &FileEntry, content: &str) -> Vec<Symbol> {
         None => Vec::new(),
     }
 }
+
+pub fn extract_imports(file: &FileEntry, content: &str) -> Vec<String> {
+    match get_parser(file.language) {
+        Some(parser) => parser.parse_imports(content),
+        None => Vec::new(),
+    }
+}

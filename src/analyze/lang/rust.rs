@@ -17,14 +17,17 @@ static ENUM_PATTERN: Lazy<Regex> =
 static TRAIT_PATTERN: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"(?m)^[ \t]*(pub(?:\([^)]+\))?\s+)?trait\s+(\w+)").unwrap());
 
-static IMPL_PATTERN: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"(?m)^[ \t]*impl(?:<[^>]+>)?\s+(?:(\w+)\s+for\s+)?(\w+)").unwrap());
-
 static CONST_PATTERN: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"(?m)^[ \t]*(pub(?:\([^)]+\))?\s+)?const\s+(\w+)\s*:").unwrap());
 
 static TYPE_ALIAS_PATTERN: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"(?m)^[ \t]*(pub(?:\([^)]+\))?\s+)?type\s+(\w+)").unwrap());
+
+static USE_PATTERN: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"(?m)^[ \t]*(?:pub\s+)?use\s+(?:crate::)?(\w+)").unwrap());
+
+static MOD_PATTERN: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"(?m)^[ \t]*(?:pub\s+)?mod\s+(\w+)\s*;").unwrap());
 
 impl LanguageParser for RustParser {
     fn parse_symbols(&self, content: &str) -> Vec<Symbol> {
@@ -159,6 +162,30 @@ impl LanguageParser for RustParser {
 
         symbols.sort_by_key(|s| s.line_range.start);
         symbols
+    }
+
+    fn parse_imports(&self, content: &str) -> Vec<String> {
+        let mut imports = Vec::new();
+
+        for cap in USE_PATTERN.captures_iter(content) {
+            if let Some(m) = cap.get(1) {
+                let module = m.as_str().to_string();
+                if !imports.contains(&module) {
+                    imports.push(module);
+                }
+            }
+        }
+
+        for cap in MOD_PATTERN.captures_iter(content) {
+            if let Some(m) = cap.get(1) {
+                let module = m.as_str().to_string();
+                if !imports.contains(&module) {
+                    imports.push(module);
+                }
+            }
+        }
+
+        imports
     }
 }
 
