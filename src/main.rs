@@ -1,3 +1,84 @@
-fn main() {
-    println!("Hello, world!");
+use anyhow::{Context, Result};
+use clap::Parser;
+use std::fs;
+
+use agentmap::analyze::{extract_memory_markers, extract_symbols};
+use agentmap::cli::Args;
+use agentmap::emit::{write_outputs, OutputBundle};
+use agentmap::generate::{
+    detect_entry_points, generate_agents_md, generate_memory, generate_outline, get_critical_files,
+};
+use agentmap::scan::scan_directory;
+use agentmap::types::{FileEntry, MemoryEntry, Symbol};
+
+fn main() -> Result<()> {
+    let args = Args::parse();
+
+    args.validate()
+        .map_err(|e| anyhow::anyhow!(e))
+        .context("Invalid arguments")?;
+
+    if args.verbosity() > 0 {
+        eprintln!("Scanning: {}", args.path.display());
+    }
+
+    let files = scan_directory(&args.path, args.threshold, !args.no_gitignore)
+        .context("Failed to scan directory")?;
+
+    if args.verbosity() > 0 {
+        eprintln!("  Files scanned: {}", files.len());
+    }
+
+    let mut all_memory: Vec<MemoryEntry> = Vec::new();
+    let mut large_file_symbols: Vec<(FileEntry, Vec<Symbol>)> = Vec::new();
+
+    for file in &files {
+        let content = match fs::read_to_string(&file.path) {
+            Ok(c) => c,
+            Err(_) => continue,
+        };
+
+        let memory_entries = extract_memory_markers(&content, &file.relative_path);
+        all_memory.extend(memory_entries);
+
+        if file.is_large {
+            let symbols = extract_symbols(file, &content);
+            large_file_symbols.push((file.clone(), symbols));
+        }
+    }
+
+    if args.verbosity() > 0 {
+        eprintln!(
+            "  Large files (>{} lines): {}",
+            args.threshold,
+            large_file_symbols.len()
+        );
+        eprintln!("  Memory markers found: {}", all_memory.len());
+    }
+
+    let outline = generate_outline(&large_file_symbols);
+    let memory = generate_memory(&all_memory);
+
+    let critical_files = get_critical_files(&all_memory);
+    let entry_points = detect_entry_points(&files);
+    let large_files_refs: Vec<_> = large_file_symbols.iter().map(|(f, _)| f.clone()).collect();
+
+    let agents_md = generate_agents_md(&large_files_refs, &critical_files, &entry_points);
+
+    let bundle = OutputBundle {
+        outline,
+        memory,
+        agents_md,
+    };
+
+    write_outputs(&args.output, &bundle, args.dry_run).context("Failed to write outputs")?;
+
+    if args.verbosity() > 0 && !args.dry_run {
+        eprintln!("\nGenerated:");
+        eprintln!("  {}/outline.md", args.output.display());
+        eprintln!("  {}/memory.md", args.output.display());
+        eprintln!("  {}/AGENTS.md", args.output.display());
+    }
+
+    Ok(())
 }

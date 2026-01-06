@@ -1,6 +1,38 @@
 [package]
 name = "agentmap"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+description = "CLI tool to prepare codebases for AI agents by generating outlines, memory files, and reading rules"
+license = "MIT"
+repository = "https://github.com/user/agentmap"
+keywords = ["cli", "ai", "code-analysis", "documentation"]
+categories = ["command-line-utilities", "development-tools"]
 
 [dependencies]
+# CLI argument parsing
+clap = { version = "4", features = ["derive"] }
+
+# Directory traversal
+walkdir = "2"
+ignore = "0.4"
+
+# Pattern matching
+regex = "1"
+once_cell = "1"
+
+# Error handling
+thiserror = "1"
+anyhow = "1"
+
+[dev-dependencies]
+tempfile = "3"
+assert_cmd = "2"
+predicates = "3"
+
+[[bin]]
+name = "agentmap"
+path = "src/main.rs"
+
+[lib]
+name = "agentmap"
+path = "src/lib.rs"
