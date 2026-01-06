@@ -7,6 +7,7 @@ pub enum Language {
     JavaScript,
     TypeScript,
     Go,
+    Php,
     Unknown,
 }
 
@@ -18,6 +19,7 @@ impl Language {
             "js" | "jsx" | "mjs" | "cjs" => Language::JavaScript,
             "ts" | "tsx" | "mts" | "cts" => Language::TypeScript,
             "go" => Language::Go,
+            "php" | "phtml" => Language::Php,
             _ => Language::Unknown,
         }
     }
@@ -34,6 +36,8 @@ impl Language {
             || first_line.contains("bun")
         {
             Some(Language::JavaScript)
+        } else if first_line.contains("php") {
+            Some(Language::Php)
         } else {
             None
         }

@@ -33,6 +33,7 @@ impl std::fmt::Display for SymbolKind {
 pub enum Visibility {
     Public,
     Private,
+    Protected,
     Internal,
 }
 
@@ -41,6 +42,7 @@ impl std::fmt::Display for Visibility {
         match self {
             Visibility::Public => write!(f, "pub"),
             Visibility::Private => write!(f, "(private)"),
+            Visibility::Protected => write!(f, "(protected)"),
             Visibility::Internal => write!(f, "(internal)"),
         }
     }
