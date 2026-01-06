@@ -6,9 +6,9 @@ This file contains extracted knowledge markers from the codebase.
 
 | Category | Count | High | Medium | Low |
 | -------- | ----- | ---- | ------ | --- |
-| ⚠️ Warnings | 6 | 6 | 0 | 0 |
+| ⚠️ Warnings | 7 | 7 | 0 | 0 |
 | 📋 Business Rules | 4 | 4 | 0 | 0 |
-| 🔧 Technical Debt | 7 | 0 | 7 | 0 |
+| 🔧 Technical Debt | 8 | 0 | 8 | 0 |
 | 📝 Notes | 2 | 0 | 0 | 2 |
 
 ---
@@ -26,6 +26,10 @@ This file contains extracted knowledge markers from the codebase.
 ### 🔴 `WARNING` (OrderService.java:19)
 
 > This method modifies the database directly
+
+### 🔴 `WARNING` (example.c:27)
+
+> Caller must free the returned memory
 
 ### 🔴 `WARNING` (order.php:2)
 
@@ -78,6 +82,10 @@ This file contains extracted knowledge markers from the codebase.
 ### 🟡 `FIXME` (OrderService.java:26)
 
 > Needs transaction support
+
+### 🟡 `TODO` (example.c:4)
+
+> Add error handling
 
 ### 🟡 `TODO` (order.php:12)
 

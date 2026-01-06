@@ -6,6 +6,7 @@ This file contains symbol maps for large files in the codebase.
 
 - [OrderController.cs](#ordercontroller-cs) (58 lines, 16 symbols)
 - [OrderService.java](#orderservice-java) (60 lines, 12 symbols)
+- [example.c](#example-c) (35 lines, 6 symbols)
 - [order.php](#order-php) (100 lines, 10 symbols)
 
 ---
@@ -58,6 +59,26 @@ This file contains symbol maps for large files in the codebase.
 ### Key Entry Points
 
 - `public class OrderService` (L10)
+
+---
+
+## example.c (35 lines)
+
+| Line | Kind | Name | Visibility |
+| ---- | ---- | ---- | ---------- |
+| 5 | struct | anonymous | pub |
+| 12 | enum | Color | pub |
+| 18 | fn | helper_function | (private) |
+| 22 | fn | add | pub |
+| 26 | fn | allocate_memory | pub |
+| 31 | fn | main | pub |
+
+### Key Entry Points
+
+- `struct anonymous` (L5)
+- `int add(int a, int b)` (L22)
+- `void* allocate_memory(size_t size)` (L26)
+- `int main(int argc, char* argv[])` (L31)
 
 ---
 

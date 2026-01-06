@@ -29,6 +29,7 @@ These files exceed the line threshold. Use `outline.md` for symbol maps:
 | ---- | ----- | -------- |
 | `OrderController.cs` | 58 | CSharp |
 | `OrderService.java` | 60 | Java |
+| `example.c` | 35 | C |
 | `order.php` | 100 | Php |
 
 ## Critical Files (Review memory.md First)
@@ -40,6 +41,7 @@ These files contain high-priority warnings or business rules:
 | `order.php` | 5 |
 | `OrderController.cs` | 3 |
 | `OrderService.java` | 2 |
+| `example.c` | 1 |
 
 ---
 

@@ -10,6 +10,7 @@ pub enum Language {
     Php,
     Java,
     CSharp,
+    C,
     Unknown,
 }
 
@@ -24,6 +25,7 @@ impl Language {
             "php" | "phtml" => Language::Php,
             "java" => Language::Java,
             "cs" => Language::CSharp,
+            "c" | "h" => Language::C,
             _ => Language::Unknown,
         }
     }
