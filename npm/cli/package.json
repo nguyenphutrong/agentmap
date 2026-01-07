@@ -1,6 +1,6 @@
 {
   "name": "agentmap-cli",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Prepare codebases for AI agents by generating hierarchical documentation",
   "keywords": [
     "ai",
@@ -35,10 +35,10 @@
     "node": ">=16.0.0"
   },
   "optionalDependencies": {
-    "@agentmap/darwin-arm64": "0.4.2",
-    "@agentmap/darwin-x64": "0.4.2",
-    "@agentmap/linux-arm64": "0.4.2",
-    "@agentmap/linux-x64": "0.4.2",
-    "@agentmap/win32-x64": "0.4.2"
+    "@agentmap/darwin-arm64": "0.4.3",
+    "@agentmap/darwin-x64": "0.4.3",
+    "@agentmap/linux-arm64": "0.4.3",
+    "@agentmap/linux-x64": "0.4.3",
+    "@agentmap/win32-x64": "0.4.3"
   }
 }

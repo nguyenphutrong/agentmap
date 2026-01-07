@@ -1,6 +1,6 @@
 {
   "name": "@agentmap/darwin-x64",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "agentmap binary for macOS x64",
   "repository": {
     "type": "git",
