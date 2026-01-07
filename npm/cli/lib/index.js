@@ -2,14 +2,14 @@ const { spawn } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
-const BINARY_NAME = process.platform === "win32" ? "agentmap.exe" : "agentmap";
+const BINARY_NAME = process.platform === "win32" ? "agentlens.exe" : "agentlens";
 
 const PLATFORM_PACKAGES = {
-  "darwin-arm64": "@agentmap/darwin-arm64",
-  "darwin-x64": "@agentmap/darwin-x64",
-  "linux-arm64": "@agentmap/linux-arm64",
-  "linux-x64": "@agentmap/linux-x64",
-  "win32-x64": "@agentmap/win32-x64",
+  "darwin-arm64": "@agentlens/darwin-arm64",
+  "darwin-x64": "@agentlens/darwin-x64",
+  "linux-arm64": "@agentlens/linux-arm64",
+  "linux-x64": "@agentlens/linux-x64",
+  "win32-x64": "@agentlens/win32-x64",
 };
 
 function getPlatformPackage() {
@@ -43,9 +43,9 @@ function getBinaryPath() {
   }
 
   throw new Error(
-    `agentmap binary not found. Please reinstall agentmap-cli or install manually:\n` +
-      `  cargo install agentmap\n` +
-      `  brew install nguyenphutrong/tap/agentmap`
+    `agentlens binary not found. Please reinstall @agentlens/cli or install manually:\n` +
+      `  cargo install agentlens\n` +
+      `  brew install nguyenphutrong/tap/agentlens`
   );
 }
 
@@ -58,7 +58,7 @@ function runBinary(args) {
   });
 
   child.on("error", (err) => {
-    console.error(`Failed to start agentmap: ${err.message}`);
+    console.error(`Failed to start agentlens: ${err.message}`);
     process.exit(1);
   });
 

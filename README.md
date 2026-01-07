@@ -1,4 +1,4 @@
-# agentmap
+# agentlens
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Rust](https://img.shields.io/badge/rust-1.70%2B-orange.svg)](https://www.rust-lang.org/)
@@ -9,10 +9,10 @@
 
 ## What It Does
 
-agentmap scans your codebase and generates a **hierarchical documentation structure** organized by modules:
+agentlens scans your codebase and generates a **hierarchical documentation structure** organized by modules:
 
 ```
-.agentmap/
+.agentlens/
 ├── INDEX.md              # L0: Global routing table
 ├── modules/
 │   └── {module-slug}/
@@ -37,7 +37,7 @@ agentmap scans your codebase and generates a **hierarchical documentation struct
 
 ## Why?
 
-AI coding assistants struggle with large codebases because they can't see the full picture. agentmap provides:
+AI coding assistants struggle with large codebases because they can't see the full picture. agentlens provides:
 
 - **Hierarchical navigation** so AI loads only what it needs (not entire codebase docs)
 - **Module detection** that groups files into semantic units automatically
@@ -49,42 +49,42 @@ AI coding assistants struggle with large codebases because they can't see the fu
 ### Homebrew (macOS) — Recommended
 
 ```bash
-brew install nguyenphutrong/tap/agentmap
+brew install nguyenphutrong/tap/agentlens
 ```
 
 ### npm / pnpm / yarn / bun
 
 ```bash
-npx agentmap-cli            # Run without install
-npm install -g agentmap-cli
-pnpm add -g agentmap-cli
-yarn global add agentmap-cli
-bun add -g agentmap-cli
+npx agentlens-cli            # Run without install
+npm install -g agentlens-cli
+pnpm add -g agentlens-cli
+yarn global add agentlens-cli
+bun add -g agentlens-cli
 ```
 
 ### Quick Install Script
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nguyenphutrong/agentmap/main/scripts/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/nguyenphutrong/agentlens/main/scripts/install.sh | sh
 ```
 
 ### From crates.io
 
 ```bash
-cargo install agentmap
+cargo install agentlens
 ```
 
 ### From Source
 
 ```bash
-git clone https://github.com/nguyenphutrong/agentmap
-cd agentmap
+git clone https://github.com/nguyenphutrong/agentlens
+cd agentlens
 cargo install --path .
 ```
 
 ### Manual Download
 
-Download prebuilt binaries from [GitHub Releases](https://github.com/nguyenphutrong/agentmap/releases).
+Download prebuilt binaries from [GitHub Releases](https://github.com/nguyenphutrong/agentlens/releases).
 
 ## Usage
 
@@ -92,59 +92,59 @@ Download prebuilt binaries from [GitHub Releases](https://github.com/nguyenphutr
 
 ```bash
 # Generate docs for current directory (hierarchical mode - default)
-agentmap
+agentlens
 
 # Output to custom directory
-agentmap -o docs/ai
+agentlens -o docs/ai
 
 # Preview without writing files
-agentmap --dry-run
+agentlens --dry-run
 
 # Verbose output
-agentmap -v
+agentlens -v
 ```
 
 ### Remote Repositories
 
 ```bash
 # Analyze a GitHub repository directly
-agentmap github.com/user/repo
-agentmap https://github.com/vercel/next.js
+agentlens github.com/user/repo
+agentlens https://github.com/vercel/next.js
 
 # With depth limiting for large repos
-agentmap --depth 3 github.com/facebook/react
+agentlens --depth 3 github.com/facebook/react
 ```
 
 ### Git Diff Mode
 
 ```bash
 # Show only files changed since a branch
-agentmap --diff main
+agentlens --diff main
 
 # Compare against a specific commit
-agentmap --diff HEAD~5
+agentlens --diff HEAD~5
 ```
 
 ### JSON Output
 
 ```bash
 # Output analysis as JSON (for tooling integration)
-agentmap --json > analysis.json
+agentlens --json > analysis.json
 
 # Combine with other flags
-agentmap --json --depth 2 github.com/user/repo
+agentlens --json --depth 2 github.com/user/repo
 ```
 
 ### Options
 
 ```
-Usage: agentmap [OPTIONS] [PATH]
+Usage: agentlens [OPTIONS] [PATH]
 
 Arguments:
   [PATH]  Target directory or GitHub URL [default: .]
 
 Options:
-  -o, --output <OUTPUT>              Output directory [default: .agentmap]
+  -o, --output <OUTPUT>              Output directory [default: .agentlens]
   -t, --threshold <THRESHOLD>        Line threshold for "large" files [default: 500]
   -c, --complex-threshold <COMPLEX>  Symbol threshold for L2 file docs [default: 30]
   -d, --depth <DEPTH>                Max directory depth (0 = unlimited) [default: 0]
@@ -165,8 +165,8 @@ Options:
 Commands:
   watch   Watch for file changes and regenerate docs automatically
   hooks   Manage git hooks for automatic regeneration
-  init    Initialize agentmap configuration
-  update  Update agentmap to the latest version
+  init    Initialize agentlens configuration
+  update  Update agentlens to the latest version
 ```
 
 ## Watch Mode
@@ -175,10 +175,10 @@ Keep documentation in sync automatically during development:
 
 ```bash
 # Start watching for changes (regenerates on file save)
-agentmap watch
+agentlens watch
 
 # Custom debounce delay (default: 300ms)
-agentmap watch --debounce 500
+agentlens watch --debounce 500
 ```
 
 Watch mode leverages the incremental manifest system, so only changed modules are regenerated.
@@ -189,19 +189,19 @@ Automate documentation regeneration at key git events:
 
 ```bash
 # Install hooks (auto-detects Husky, Lefthook, pre-commit, or native git)
-agentmap hooks install
+agentlens hooks install
 
 # Force specific hook manager
-agentmap hooks install --native      # Native git hooks
-agentmap hooks install --husky       # Husky (.husky/)
-agentmap hooks install --lefthook    # Lefthook (lefthook.yml)
-agentmap hooks install --pre-commit  # pre-commit (.pre-commit-config.yaml)
+agentlens hooks install --native      # Native git hooks
+agentlens hooks install --husky       # Husky (.husky/)
+agentlens hooks install --lefthook    # Lefthook (lefthook.yml)
+agentlens hooks install --pre-commit  # pre-commit (.pre-commit-config.yaml)
 
 # Remove hooks
-agentmap hooks remove
+agentlens hooks remove
 
 # Skip hooks temporarily
-AGENTMAP_SKIP=1 git commit -m "quick fix"
+AGENTLENS_SKIP=1 git commit -m "quick fix"
 ```
 
 ### Supported Hook Managers
@@ -214,13 +214,13 @@ AGENTMAP_SKIP=1 git commit -m "quick fix"
 | **pre-commit** | `.pre-commit-config.yaml` | pre-commit only |
 
 Installed hooks:
-- **pre-commit**: Regenerates docs and stages `.agentmap/`
+- **pre-commit**: Regenerates docs and stages `.agentlens/`
 - **post-checkout**: Regenerates after branch switch (background)
 - **post-merge**: Regenerates after pull/merge (background)
 
 ## Best Practices
 
-### Should I commit `.agentmap/`?
+### Should I commit `.agentlens/`?
 
 | Team Size | Branches | Recommendation |
 |-----------|----------|----------------|
@@ -229,34 +229,34 @@ Installed hooks:
 | Large (15+) | Many | **Ignore** - use CI to validate freshness |
 | Open Source Library | Any | **Commit** - showcase output for contributors |
 
-### Approach A: Commit `.agentmap/` (Small teams / OSS)
+### Approach A: Commit `.agentlens/` (Small teams / OSS)
 
 Best when you want docs available immediately after `git clone`.
 
 ```bash
 # Install hooks to keep docs synced across branches
-agentmap hooks install
+agentlens hooks install
 ```
 
 Add to `.gitattributes` to reduce merge conflicts:
 
 ```gitattributes
-.agentmap/** merge=ours -diff
+.agentlens/** merge=ours -diff
 ```
 
-### Approach B: Ignore `.agentmap/` (Larger teams)
+### Approach B: Ignore `.agentlens/` (Larger teams)
 
 Best when multiple developers work on many branches.
 
 ```gitignore
 # .gitignore
-.agentmap/
+.agentlens/
 ```
 
 Each developer runs once after cloning:
 
 ```bash
-agentmap hooks install
+agentlens hooks install
 ```
 
 Docs auto-regenerate on `git checkout`, `git pull`, and `git commit`.
@@ -267,36 +267,36 @@ Generate docs in CI, never commit locally:
 
 ```gitignore
 # .gitignore
-.agentmap/
+.agentlens/
 ```
 
 ```yaml
 # .github/workflows/docs.yml
-- name: Generate agentmap docs
-  run: agentmap
+- name: Generate agentlens docs
+  run: agentlens
 - name: Upload as artifact
   uses: actions/upload-artifact@v4
   with:
-    name: agentmap-docs
-    path: .agentmap/
+    name: agentlens-docs
+    path: .agentlens/
 ```
 
 ## Configuration File
 
-Create `agentmap.toml` for project-specific settings:
+Create `agentlens.toml` for project-specific settings:
 
 ```bash
 # Generate default config file
-agentmap init --config
+agentlens init --config
 
 # Use custom config location
-agentmap --config custom.toml
+agentlens --config custom.toml
 ```
 
-Example `agentmap.toml`:
+Example `agentlens.toml`:
 
 ```toml
-output = ".agentmap"
+output = ".agentlens"
 threshold = 500
 complex_threshold = 1000
 ignore = ["*.test.ts", "fixtures/", "__mocks__/"]
@@ -313,11 +313,11 @@ Generate ready-to-use configuration templates for popular AI coding tools:
 
 ```bash
 # Generate all templates (.cursorrules, CLAUDE.md, AGENTS.md)
-agentmap init --templates
+agentlens init --templates
 
 # Generate specific templates only
-agentmap init --templates=cursor
-agentmap init --templates=claude,opencode
+agentlens init --templates=cursor
+agentlens init --templates=claude,opencode
 ```
 
 Supported tools:
@@ -325,18 +325,18 @@ Supported tools:
 - **Claude Code** (`CLAUDE.md`) - Instructions for Claude Code
 - **OpenCode** (`AGENTS.md`) - Instructions for OpenCode
 
-Templates are **non-destructive**: they append to existing files and skip if agentmap section already exists.
+Templates are **non-destructive**: they append to existing files and skip if agentlens section already exists.
 
 ## MCP Server
 
-agentmap can run as an MCP server for AI tools like Claude Desktop and Cursor:
+agentlens can run as an MCP server for AI tools like Claude Desktop and Cursor:
 
 ```bash
 # Using npx (no install required)
-npx agentmap-cli serve --mcp
+npx agentlens-cli serve --mcp
 
 # Or if installed globally
-agentmap serve --mcp
+agentlens serve --mcp
 ```
 
 **Available tools:**
@@ -353,9 +353,9 @@ agentmap serve --mcp
 ```json
 {
   "mcpServers": {
-    "agentmap": {
+    "agentlens": {
       "command": "npx",
-      "args": ["agentmap-cli", "serve", "--mcp"]
+      "args": ["agentlens-cli", "serve", "--mcp"]
     }
   }
 }
@@ -369,10 +369,10 @@ Validate documentation freshness in CI pipelines:
 
 ```bash
 # Check if docs are stale (exit 0 = fresh, exit 1 = stale)
-agentmap --check
+agentlens --check
 
 # Combine with diff mode
-agentmap --check --diff main
+agentlens --check --diff main
 ```
 
 Example GitHub Actions workflow:
@@ -386,15 +386,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install agentmap
-        run: cargo install agentmap
+      - name: Install agentlens
+        run: cargo install agentlens
       - name: Check docs freshness
-        run: agentmap --check
+        run: agentlens --check
 ```
 
 ## Module Detection
 
-agentmap automatically detects module boundaries using language-specific conventions:
+agentlens automatically detects module boundaries using language-specific conventions:
 
 | Language | Explicit Boundary | Example |
 |----------|-------------------|---------|
@@ -519,7 +519,7 @@ Directory paths are converted to slugs using hyphens:
 
 ## Memory Markers
 
-agentmap extracts these comment patterns:
+agentlens extracts these comment patterns:
 
 | Pattern | Category | Priority |
 |---------|----------|----------|
@@ -538,7 +538,7 @@ Add to your project's AI instructions:
 
 ```
 Before working on this codebase, read:
-1. .agentmap/INDEX.md - for project overview and module routing
+1. .agentlens/INDEX.md - for project overview and module routing
 2. Navigate to relevant module's MODULE.md for details
 3. Check module's memory.md for warnings before editing
 4. Consult module's outline.md for large file navigation
@@ -546,14 +546,14 @@ Before working on this codebase, read:
 
 ### GitHub Copilot
 
-Include `.agentmap/` in your workspace context.
+Include `.agentlens/` in your workspace context.
 
 ### JSON Integration
 
 For programmatic access:
 
 ```bash
-agentmap --json | jq '.modules[] | {slug, file_count, warning_count}'
+agentlens --json | jq '.modules[] | {slug, file_count, warning_count}'
 ```
 
 JSON output includes:

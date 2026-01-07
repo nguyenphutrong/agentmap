@@ -1,5 +1,5 @@
 {
-  "name": "agentmap-cli",
+  "name": "@agentlens/cli",
   "version": "0.4.3",
   "description": "Prepare codebases for AI agents by generating hierarchical documentation",
   "keywords": [
@@ -17,14 +17,14 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nguyenphutrong/agentmap.git"
+    "url": "git+https://github.com/nguyenphutrong/agentlens.git"
   },
-  "homepage": "https://github.com/nguyenphutrong/agentmap#readme",
+  "homepage": "https://github.com/nguyenphutrong/agentlens#readme",
   "bugs": {
-    "url": "https://github.com/nguyenphutrong/agentmap/issues"
+    "url": "https://github.com/nguyenphutrong/agentlens/issues"
   },
   "bin": {
-    "agentmap": "bin/agentmap"
+    "agentlens": "bin/agentlens"
   },
   "main": "./lib/index.js",
   "files": [
@@ -35,10 +35,10 @@
     "node": ">=16.0.0"
   },
   "optionalDependencies": {
-    "@agentmap/darwin-arm64": "0.4.3",
-    "@agentmap/darwin-x64": "0.4.3",
-    "@agentmap/linux-arm64": "0.4.3",
-    "@agentmap/linux-x64": "0.4.3",
-    "@agentmap/win32-x64": "0.4.3"
+    "@agentlens/darwin-arm64": "0.4.3",
+    "@agentlens/darwin-x64": "0.4.3",
+    "@agentlens/linux-arm64": "0.4.3",
+    "@agentlens/linux-x64": "0.4.3",
+    "@agentlens/win32-x64": "0.4.3"
   }
 }

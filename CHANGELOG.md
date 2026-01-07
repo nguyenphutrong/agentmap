@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - pre-commit (`.pre-commit-config.yaml`)
   - Native git hooks (`.git/hooks/`)
 - **CLI flags for hook managers** - `--native`, `--husky`, `--lefthook`, `--pre-commit`
-- **npm package** (`agentmap-cli`) - Install via `npm install -g agentmap-cli` or use `npx agentmap-cli`
+- **npm package** (`agentlens-cli`) - Install via `npm install -g agentlens-cli` or use `npx agentlens-cli`
 - **MCP server documentation** - Comprehensive docs (EN/VI) for Model Context Protocol integration
 
 ### Changed
@@ -31,10 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **AGENT.md generation** - Auto-generated AI instruction file at project root
 - **Watch mode** (`--watch`) - Real-time file watching with automatic regeneration
 - **Git hooks** (`--hooks`) - Automatic regeneration on git commit
-- **Config file** (`agentmap.toml`) - Project-level configuration support
-- **CI validation** (`--check`) - Exit non-zero if `.agentmap/` is outdated
-- **Self-update** (`--update`) - Update agentmap binary from command line
-- **Homebrew tap** - Install via `brew install trongnguyen24/tap/agentmap`
+- **Config file** (`agentlens.toml`) - Project-level configuration support
+- **CI validation** (`--check`) - Exit non-zero if `.agentlens/` is outdated
+- **Self-update** (`--update`) - Update agentlens binary from command line
+- **Homebrew tap** - Install via `brew install trongnguyen24/tap/agentlens`
 
 ### Fixed
 
@@ -81,7 +81,7 @@ Initial release.
 ### Output Structure
 
 ```
-.agentmap/
+.agentlens/
 ├── INDEX.md              # L0: Global routing table
 ├── modules/
 │   └── {module-slug}/

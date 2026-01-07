@@ -1,6 +1,6 @@
 #!/bin/sh
-# agentmap installer script
-# Usage: curl -fsSL https://raw.githubusercontent.com/nguyenphutrong/agentmap/main/scripts/install.sh | sh
+# agentlens installer script
+# Usage: curl -fsSL https://raw.githubusercontent.com/nguyenphutrong/agentlens/main/scripts/install.sh | sh
 
 set -e
 
@@ -11,8 +11,8 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-REPO="nguyenphutrong/agentmap"
-BINARY_NAME="agentmap"
+REPO="nguyenphutrong/agentlens"
+BINARY_NAME="agentlens"
 INSTALL_DIR="${HOME}/.local/bin"
 
 info() {
@@ -138,7 +138,7 @@ main() {
 
     # Verify installation
     if [ -x "${INSTALL_DIR}/${BINARY_NAME}" ]; then
-        success "agentmap ${VERSION} installed successfully!"
+        success "agentlens ${VERSION} installed successfully!"
     else
         error "Installation failed"
     fi
@@ -147,7 +147,7 @@ main() {
     case ":$PATH:" in
         *":${INSTALL_DIR}:"*)
             printf "\n"
-            info "Run 'agentmap --help' to get started"
+            info "Run 'agentlens --help' to get started"
             ;;
         *)
             printf "\n"

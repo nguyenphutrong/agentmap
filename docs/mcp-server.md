@@ -1,18 +1,18 @@
 # MCP Server
 
-agentmap can run as an [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server, enabling AI tools like Claude Desktop, Cursor, and others to query and regenerate codebase documentation programmatically.
+agentlens can run as an [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server, enabling AI tools like Claude Desktop, Cursor, and others to query and regenerate codebase documentation programmatically.
 
 ## Quick Start
 
 ```bash
 # Using npx (no install required)
-npx agentmap-cli serve --mcp
+npx agentlens-cli serve --mcp
 
 # Using bunx
-bunx agentmap-cli serve --mcp
+bunx agentlens-cli serve --mcp
 
 # Or if installed globally
-agentmap serve --mcp
+agentlens serve --mcp
 ```
 
 ## Available Tools
@@ -21,7 +21,7 @@ The MCP server exposes 4 tools:
 
 ### `regenerate`
 
-Regenerate agentmap documentation for the codebase.
+Regenerate agentlens documentation for the codebase.
 
 **Parameters:** None
 
@@ -94,7 +94,7 @@ The server also exposes resources:
 
 | URI | Description |
 |-----|-------------|
-| `agentmap://index` | Read INDEX.md content |
+| `agentlens://index` | Read INDEX.md content |
 
 ## Client Configuration
 
@@ -105,9 +105,9 @@ Add to `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "agentmap": {
+    "agentlens": {
       "command": "npx",
-      "args": ["agentmap-cli", "serve", "--mcp"],
+      "args": ["agentlens-cli", "serve", "--mcp"],
       "cwd": "/path/to/your/project"
     }
   }
@@ -125,10 +125,10 @@ Use the CLI to add the MCP server:
 
 ```bash
 # Add with user scope (available in all projects)
-claude mcp add agentmap --scope user -- npx agentmap-cli serve --mcp
+claude mcp add agentlens --scope user -- npx agentlens-cli serve --mcp
 
 # Or add with project scope (only this project)
-claude mcp add agentmap --scope project -- npx agentmap-cli serve --mcp
+claude mcp add agentlens --scope project -- npx agentlens-cli serve --mcp
 ```
 
 **Or edit config directly** at `~/.claude/settings.json`:
@@ -136,9 +136,9 @@ claude mcp add agentmap --scope project -- npx agentmap-cli serve --mcp
 ```json
 {
   "mcpServers": {
-    "agentmap": {
+    "agentlens": {
       "command": "npx",
-      "args": ["agentmap-cli", "serve", "--mcp"]
+      "args": ["agentlens-cli", "serve", "--mcp"]
     }
   }
 }
@@ -158,9 +158,9 @@ Add to `opencode.json` (project root) or `~/.config/opencode/config.json` (globa
 {
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "agentmap": {
+    "agentlens": {
       "type": "local",
-      "command": ["npx", "agentmap-cli", "serve", "--mcp"],
+      "command": ["npx", "agentlens-cli", "serve", "--mcp"],
       "enabled": true
     }
   }
@@ -176,9 +176,9 @@ Add to `.cursor/mcp.json` in your project:
 ```json
 {
   "mcpServers": {
-    "agentmap": {
+    "agentlens": {
       "command": "npx",
-      "args": ["agentmap-cli", "serve", "--mcp"]
+      "args": ["agentlens-cli", "serve", "--mcp"]
     }
   }
 }
@@ -191,9 +191,9 @@ Add to `~/.codeium/windsurf/mcp_config.json`:
 ```json
 {
   "mcpServers": {
-    "agentmap": {
+    "agentlens": {
       "command": "npx",
-      "args": ["agentmap-cli", "serve", "--mcp"],
+      "args": ["agentlens-cli", "serve", "--mcp"],
       "cwd": "/path/to/your/project"
     }
   }
@@ -207,10 +207,10 @@ Add to Zed settings (`~/.config/zed/settings.json`):
 ```json
 {
   "context_servers": {
-    "agentmap": {
+    "agentlens": {
       "command": {
         "path": "npx",
-        "args": ["agentmap-cli", "serve", "--mcp"]
+        "args": ["agentlens-cli", "serve", "--mcp"]
       }
     }
   }
@@ -224,9 +224,9 @@ If using an MCP extension, add to `.vscode/mcp.json`:
 ```json
 {
   "servers": {
-    "agentmap": {
+    "agentlens": {
       "command": "npx",
-      "args": ["agentmap-cli", "serve", "--mcp"]
+      "args": ["agentlens-cli", "serve", "--mcp"]
     }
   }
 }
@@ -237,7 +237,7 @@ If using an MCP extension, add to `.vscode/mcp.json`:
 Any MCP-compatible client can connect via stdio transport:
 
 ```bash
-npx agentmap-cli serve --mcp
+npx agentlens-cli serve --mcp
 ```
 
 The server communicates via JSON-RPC over stdin/stdout.
@@ -278,16 +278,16 @@ AI: Use regenerate after making code changes to update documentation.
 
 ### Server not starting
 
-Ensure agentmap is in your PATH:
+Ensure agentlens is in your PATH:
 
 ```bash
-which agentmap
+which agentlens
 ```
 
 If not found, reinstall:
 
 ```bash
-cargo install agentmap
+cargo install agentlens
 ```
 
 ### Permission denied
@@ -295,15 +295,15 @@ cargo install agentmap
 Make sure the binary is executable:
 
 ```bash
-chmod +x $(which agentmap)
+chmod +x $(which agentlens)
 ```
 
 ### Module not found errors
 
-Run agentmap once to generate docs:
+Run agentlens once to generate docs:
 
 ```bash
-agentmap
+agentlens
 ```
 
 Then start the MCP server.

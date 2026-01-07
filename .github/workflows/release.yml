@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 env:
   CARGO_TERM_COLOR: always
@@ -62,26 +63,26 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           cd target/${{ matrix.target }}/release
-          tar czf ../../../agentmap-${{ matrix.name }}.tar.gz agentmap
+          tar czf ../../../agentlens-${{ matrix.name }}.tar.gz agentlens
           cd ../../..
-          shasum -a 256 agentmap-${{ matrix.name }}.tar.gz > agentmap-${{ matrix.name }}.tar.gz.sha256
+          shasum -a 256 agentlens-${{ matrix.name }}.tar.gz > agentlens-${{ matrix.name }}.tar.gz.sha256
 
       - name: Package (Windows)
         if: runner.os == 'Windows'
         run: |
           cd target/${{ matrix.target }}/release
-          7z a ../../../agentmap-${{ matrix.name }}.zip agentmap.exe
+          7z a ../../../agentlens-${{ matrix.name }}.zip agentlens.exe
           cd ../../..
-          Get-FileHash agentmap-${{ matrix.name }}.zip -Algorithm SHA256 | Format-List > agentmap-${{ matrix.name }}.zip.sha256
+          Get-FileHash agentlens-${{ matrix.name }}.zip -Algorithm SHA256 | Format-List > agentlens-${{ matrix.name }}.zip.sha256
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: agentmap-${{ matrix.name }}
+          name: agentlens-${{ matrix.name }}
           path: |
-            agentmap-*.tar.gz
-            agentmap-*.zip
-            agentmap-*.sha256
+            agentlens-*.tar.gz
+            agentlens-*.zip
+            agentlens-*.sha256
 
   release:
     name: Create Release
@@ -138,7 +139,7 @@ jobs:
             -H "Authorization: token ${{ secrets.TAP_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/nguyenphutrong/homebrew-tap/dispatches \
-            -d '{"event_type":"agentmap-release","client_payload":{"version":"${{ github.ref_name }}"}}'
+            -d '{"event_type":"agentlens-release","client_payload":{"version":"${{ github.ref_name }}"}}'
 
   publish-npm:
     name: Publish to npm
@@ -163,7 +164,7 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: agentmap-${{ matrix.artifact }}
+          name: agentlens-${{ matrix.artifact }}
           path: artifacts
 
       - name: Setup Node.js
@@ -182,21 +183,21 @@ jobs:
           
           if [[ "${{ matrix.npm-package }}" == "win32-x64" ]]; then
             cd ../../artifacts
-            unzip agentmap-${{ matrix.artifact }}.zip -d ../npm/${{ matrix.npm-package }}/bin/
+            unzip agentlens-${{ matrix.artifact }}.zip -d ../npm/${{ matrix.npm-package }}/bin/
           else
-            tar -xzf ../../artifacts/agentmap-${{ matrix.artifact }}.tar.gz -C bin/
-            chmod +x bin/agentmap
+            tar -xzf ../../artifacts/agentlens-${{ matrix.artifact }}.tar.gz -C bin/
+            chmod +x bin/agentlens
           fi
 
       - name: Publish platform package
         run: |
           cd npm/${{ matrix.npm-package }}
-          npm publish --access public
+          npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-npm-cli:
-    name: Publish agentmap-cli to npm
+    name: Publish agentlens-cli to npm
     needs: publish-npm
     runs-on: ubuntu-latest
     steps:
@@ -218,11 +219,11 @@ jobs:
             const pkg = require('./package.json');
             const version = '$VERSION';
             pkg.optionalDependencies = {
-              '@agentmap/darwin-arm64': version,
-              '@agentmap/darwin-x64': version,
-              '@agentmap/linux-arm64': version,
-              '@agentmap/linux-x64': version,
-              '@agentmap/win32-x64': version
+              '@agentlens/darwin-arm64': version,
+              '@agentlens/darwin-x64': version,
+              '@agentlens/linux-arm64': version,
+              '@agentlens/linux-x64': version,
+              '@agentlens/win32-x64': version
             };
             require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
           "
@@ -230,6 +231,6 @@ jobs:
       - name: Publish to npm
         run: |
           cd npm/cli
-          npm publish --access public
+          npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

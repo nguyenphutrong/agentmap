@@ -1,4 +1,4 @@
-# agentmap-cli
+# agentlens-cli
 
 CLI tool to prepare codebases for AI agents by generating hierarchical documentation.
 
@@ -6,32 +6,32 @@ CLI tool to prepare codebases for AI agents by generating hierarchical documenta
 
 ```bash
 # Using npx (no install required)
-npx agentmap-cli
+npx agentlens-cli
 
 # Or install globally
-npm install -g agentmap-cli
+npm install -g agentlens-cli
 ```
 
 ## Usage
 
 ```bash
 # Generate docs for current directory
-npx agentmap-cli
+npx agentlens-cli
 
 # Start MCP server for AI tools
-npx agentmap-cli serve --mcp
+npx agentlens-cli serve --mcp
 ```
 
 ## MCP Server
 
-Use agentmap as an MCP server with Claude Desktop, Cursor, OpenCode, and other AI tools:
+Use agentlens as an MCP server with Claude Desktop, Cursor, OpenCode, and other AI tools:
 
 ```json
 {
   "mcpServers": {
-    "agentmap": {
+    "agentlens": {
       "command": "npx",
-      "args": ["agentmap-cli", "serve", "--mcp"]
+      "args": ["agentlens-cli", "serve", "--mcp"]
     }
   }
 }
@@ -39,8 +39,8 @@ Use agentmap as an MCP server with Claude Desktop, Cursor, OpenCode, and other A
 
 ## Documentation
 
-- [Full Documentation](https://github.com/nguyenphutrong/agentmap)
-- [MCP Server Setup](https://github.com/nguyenphutrong/agentmap/blob/main/docs/mcp-server.md)
+- [Full Documentation](https://github.com/nguyenphutrong/agentlens)
+- [MCP Server Setup](https://github.com/nguyenphutrong/agentlens/blob/main/docs/mcp-server.md)
 
 ## License
 

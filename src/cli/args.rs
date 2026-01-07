@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 #[derive(Subcommand, Debug, Clone)]
 pub enum Command {
-    /// Update agentmap to the latest version
+    /// Update agentlens to the latest version
     Update,
     /// Watch for file changes and regenerate docs automatically
     Watch {
@@ -16,9 +16,9 @@ pub enum Command {
         #[command(subcommand)]
         action: HooksAction,
     },
-    /// Initialize agentmap configuration file
+    /// Initialize agentlens configuration file
     Init {
-        /// Create agentmap.toml with default settings
+        /// Create agentlens.toml with default settings
         #[arg(long)]
         config: bool,
         /// Install git hooks
@@ -61,13 +61,13 @@ pub enum HooksAction {
 }
 
 #[derive(Parser, Debug, Clone)]
-#[command(name = "agentmap")]
+#[command(name = "agentlens")]
 #[command(version)]
 #[command(about = "Prepare codebases for AI agents by generating hierarchical documentation")]
 #[command(long_about = "
-agentmap scans your codebase and generates a hierarchical documentation structure:
+agentlens scans your codebase and generates a hierarchical documentation structure:
 
-  .agentmap/
+  .agentlens/
   ├── INDEX.md              # Global routing table (constant size)
   ├── modules/{module}/     # Per-module documentation
   │   ├── MODULE.md         # Module overview and file list
@@ -89,7 +89,7 @@ pub struct Args {
     pub path: PathBuf,
 
     /// Output directory for generated documentation
-    #[arg(short, long, default_value = ".agentmap")]
+    #[arg(short, long, default_value = ".agentlens")]
     pub output: PathBuf,
 
     /// Line threshold for "large" files (generates outline)
@@ -168,7 +168,7 @@ impl Args {
 
         if let Some(cfg) = config {
             if let Some(output) = cfg.output {
-                if self.output.as_os_str() == ".agentmap" {
+                if self.output.as_os_str() == ".agentlens" {
                     self.output = PathBuf::from(output);
                 }
             }

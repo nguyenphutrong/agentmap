@@ -14,7 +14,7 @@ const MANIFEST_FILE: &str = ".manifest.json";
 /// Manifest tracking module state for incremental builds
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Manifest {
-    /// Version of agentmap that generated this manifest
+    /// Version of agentlens that generated this manifest
     pub version: String,
     /// Timestamp of last full generation
     pub generated_at: u64,

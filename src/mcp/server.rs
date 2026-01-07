@@ -53,7 +53,7 @@ impl AgentmapServer {
         }
     }
 
-    #[tool(description = "Regenerate agentmap documentation for the codebase")]
+    #[tool(description = "Regenerate agentlens documentation for the codebase")]
     async fn regenerate(&self) -> Result<CallToolResult, McpError> {
         let mut args = self.args.write().await;
         args.force = true;
@@ -224,7 +224,7 @@ impl ServerHandler for AgentmapServer {
                 .enable_resources()
                 .build(),
             server_info: rmcp::model::Implementation {
-                name: "agentmap".to_string(),
+                name: "agentlens".to_string(),
                 version: env!("CARGO_PKG_VERSION").to_string(),
                 ..Default::default()
             },
@@ -242,7 +242,7 @@ impl ServerHandler for AgentmapServer {
     ) -> Result<ListResourcesResult, McpError> {
         Ok(ListResourcesResult {
             resources: vec![
-                RawResource::new("agentmap://index", "INDEX.md".to_string()).no_annotation()
+                RawResource::new("agentlens://index", "INDEX.md".to_string()).no_annotation()
             ],
             ..Default::default()
         })
@@ -254,7 +254,7 @@ impl ServerHandler for AgentmapServer {
         _ctx: RequestContext<RoleServer>,
     ) -> Result<ReadResourceResult, McpError> {
         match request.uri.as_str() {
-            "agentmap://index" => {
+            "agentlens://index" => {
                 let index_path = self.output_path.join("INDEX.md");
                 let content = fs::read_to_string(&index_path).map_err(|e| {
                     McpError::resource_not_found(

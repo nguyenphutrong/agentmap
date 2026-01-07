@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-const CONFIG_FILE_NAME: &str = "agentmap.toml";
+const CONFIG_FILE_NAME: &str = "agentlens.toml";
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default)]
@@ -39,11 +39,11 @@ impl Config {
     }
 
     pub fn generate_default() -> String {
-        r#"# agentmap configuration
-# See https://github.com/nguyenphutrong/agentmap for documentation
+        r#"# agentlens configuration
+# See https://github.com/nguyenphutrong/agentlens for documentation
 
 # Output directory for generated documentation
-# output = ".agentmap"
+# output = ".agentlens"
 
 # Line threshold for "large" files (generates outline)
 # threshold = 500
@@ -160,6 +160,6 @@ debounce_ms = 500
         assert!(config_path.exists());
 
         let content = fs::read_to_string(&config_path).unwrap();
-        assert!(content.contains("agentmap configuration"));
+        assert!(content.contains("agentlens configuration"));
     }
 }

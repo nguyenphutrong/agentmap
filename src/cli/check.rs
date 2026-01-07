@@ -93,7 +93,7 @@ pub fn run_check(args: &Args, work_path: &Path) -> Result<i32> {
             eprintln!("  Removed modules: {}", result.removed_modules.join(", "));
         }
 
-        eprintln!("\nRun 'agentmap' to regenerate documentation.");
+        eprintln!("\nRun 'agentlens' to regenerate documentation.");
         Ok(1)
     } else {
         if args.verbosity() > 0 {

@@ -1,33 +1,33 @@
 # AI Agent Setup Guide
 
-Instructions for AI coding assistants to install and use agentmap.
+Instructions for AI coding assistants to install and use agentlens.
 
 ## Quick Install (Choose One)
 
 ```bash
 # Option 1: npx (no install required)
-npx agentmap-cli
+npx agentlens-cli
 
 # Option 2: Homebrew (macOS/Linux)
-brew install nguyenphutrong/tap/agentmap
+brew install nguyenphutrong/tap/agentlens
 
 # Option 3: npm global
-npm install -g agentmap-cli
+npm install -g agentlens-cli
 
 # Option 4: Cargo
-cargo install agentmap
+cargo install agentlens
 
 # Option 5: Direct download
-curl -fsSL https://raw.githubusercontent.com/nguyenphutrong/agentmap/main/scripts/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/nguyenphutrong/agentlens/main/scripts/install.sh | sh
 ```
 
 ## Generate Documentation
 
 ```bash
 # Generate docs for current project
-agentmap
+agentlens
 
-# Output: .agentmap/ directory with hierarchical docs
+# Output: .agentlens/ directory with hierarchical docs
 ```
 
 ## Reading Protocol
@@ -35,10 +35,10 @@ agentmap
 After generation, navigate the documentation hierarchy:
 
 ```
-1. Start with .agentmap/INDEX.md
+1. Start with .agentlens/INDEX.md
    → Project overview, module list, entry points
 
-2. Go to relevant module: .agentmap/modules/{name}/MODULE.md
+2. Go to relevant module: .agentlens/modules/{name}/MODULE.md
    → File list, module structure, child modules
 
 3. Check module docs as needed:
@@ -49,10 +49,10 @@ After generation, navigate the documentation hierarchy:
 
 ## MCP Server (Recommended)
 
-Run agentmap as an MCP server for real-time codebase queries:
+Run agentlens as an MCP server for real-time codebase queries:
 
 ```bash
-npx agentmap-cli serve --mcp
+npx agentlens-cli serve --mcp
 ```
 
 ### MCP Config
@@ -62,9 +62,9 @@ Add to your AI tool's MCP configuration:
 ```json
 {
   "mcpServers": {
-    "agentmap": {
+    "agentlens": {
       "command": "npx",
-      "args": ["agentmap-cli", "serve", "--mcp"]
+      "args": ["agentlens-cli", "serve", "--mcp"]
     }
   }
 }
@@ -89,7 +89,7 @@ Include in your project's `.cursorrules`, `CLAUDE.md`, or `AGENTS.md`:
 ## Codebase Navigation
 
 Before working on this codebase:
-1. Read .agentmap/INDEX.md for project overview
+1. Read .agentlens/INDEX.md for project overview
 2. Navigate to relevant module's MODULE.md
 3. Check memory.md for warnings before editing
 4. Use outline.md for large file navigation
@@ -99,7 +99,7 @@ Before working on this codebase:
 
 ```bash
 # Generate AI tool configuration templates
-agentmap init --templates
+agentlens init --templates
 
 # Generates:
 # - .cursorrules (Cursor IDE)
@@ -112,7 +112,7 @@ agentmap init --templates
 ### Option A: Git Hooks (Automatic)
 
 ```bash
-agentmap hooks install
+agentlens hooks install
 ```
 
 Docs regenerate on commit, checkout, and merge.
@@ -120,7 +120,7 @@ Docs regenerate on commit, checkout, and merge.
 ### Option B: Watch Mode (Development)
 
 ```bash
-agentmap watch
+agentlens watch
 ```
 
 Docs regenerate on file save.
@@ -128,8 +128,8 @@ Docs regenerate on file save.
 ### Option C: Manual
 
 ```bash
-agentmap --check  # Check if stale
-agentmap          # Regenerate
+agentlens --check  # Check if stale
+agentlens          # Regenerate
 ```
 
 ## Troubleshooting
@@ -138,21 +138,21 @@ agentmap          # Regenerate
 
 ```bash
 # Verify installation
-which agentmap || npx agentmap-cli --version
+which agentlens || npx agentlens-cli --version
 
 # Reinstall if needed
-npm install -g agentmap-cli
+npm install -g agentlens-cli
 ```
 
 ### Docs seem stale
 
 ```bash
-agentmap --force  # Force full regeneration
+agentlens --force  # Force full regeneration
 ```
 
 ### Large repository slow
 
 ```bash
-agentmap --depth 3  # Limit directory depth
-agentmap -i "test/,fixtures/"  # Ignore patterns
+agentlens --depth 3  # Limit directory depth
+agentlens -i "test/,fixtures/"  # Ignore patterns
 ```

@@ -1,10 +1,10 @@
 {
-  "name": "@agentmap/darwin-arm64",
+  "name": "@agentlens/darwin-arm64",
   "version": "0.4.3",
-  "description": "agentmap binary for macOS ARM64",
+  "description": "agentlens binary for macOS ARM64",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nguyenphutrong/agentmap.git"
+    "url": "git+https://github.com/nguyenphutrong/agentlens.git"
   },
   "license": "MIT",
   "os": ["darwin"],

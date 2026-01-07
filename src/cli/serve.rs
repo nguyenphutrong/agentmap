@@ -14,7 +14,7 @@ pub async fn run_mcp_server(args: &Args, work_path: &Path) -> Result<()> {
 
     let server = AgentmapServer::new(work_path.to_path_buf(), output_path, args.clone());
 
-    eprintln!("Starting agentmap MCP server (stdio)...");
+    eprintln!("Starting agentlens MCP server (stdio)...");
     eprintln!("Work path: {}", work_path.display());
 
     let service = server
@@ -37,10 +37,10 @@ pub async fn run_mcp_http_server(args: &Args, work_path: &Path, port: u16) -> Re
     let _server = AgentmapServer::new(work_path.to_path_buf(), output_path, args.clone());
 
     eprintln!(
-        "Starting agentmap MCP server (HTTP/SSE on port {})...",
+        "Starting agentlens MCP server (HTTP/SSE on port {})...",
         port
     );
     eprintln!("Work path: {}", work_path.display());
 
-    anyhow::bail!("HTTP/SSE transport not yet implemented. Use stdio mode: agentmap serve --mcp")
+    anyhow::bail!("HTTP/SSE transport not yet implemented. Use stdio mode: agentlens serve --mcp")
 }

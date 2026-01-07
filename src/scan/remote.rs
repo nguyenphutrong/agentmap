@@ -26,7 +26,7 @@ pub fn normalize_git_url(path: &str) -> String {
 }
 
 pub fn clone_to_temp(url: &str) -> Result<PathBuf> {
-    let temp_dir = std::env::temp_dir().join(format!("agentmap-{}", std::process::id()));
+    let temp_dir = std::env::temp_dir().join(format!("agentlens-{}", std::process::id()));
     std::fs::create_dir_all(&temp_dir).context("Failed to create temp directory")?;
 
     let git_url = normalize_git_url(url);

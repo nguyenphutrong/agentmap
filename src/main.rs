@@ -4,28 +4,28 @@ use clap::Parser;
 use std::collections::HashMap;
 use std::fs;
 
-use agentmap::analyze::{
+use agentlens::analyze::{
     detect_modules, extract_imports, extract_memory_markers, extract_symbols, FileGraph, ModuleInfo,
 };
-use agentmap::cli::{
+use agentlens::cli::{
     install_hooks_with_manager, remove_hooks, run_check, run_mcp_http_server, run_mcp_server,
     run_templates, run_update, run_watch, Args, Command, HooksAction,
 };
-use agentmap::emit::{
+use agentlens::emit::{
     calculate_module_state, current_timestamp, write_hierarchical, CriticalFile, DiffInfo,
     HierarchicalOutput, HubFile, JsonOutput, LargeFileEntry, Manifest, ModuleOutput, ProjectInfo,
 };
-use agentmap::generate::{
+use agentlens::generate::{
     detect_entry_points, file_path_to_slug, generate_agent_md, generate_file_doc,
     generate_index_md, generate_module_content, get_critical_files, is_complex_file, AgentConfig,
     IndexConfig,
 };
-use agentmap::scan::{
+use agentlens::scan::{
     cleanup_temp, clone_to_temp, get_default_branch, get_diff_files, get_git_head, is_git_repo,
     scan_directory, DiffStat,
 };
-use agentmap::types::{FileEntry, MemoryEntry, Symbol};
-use agentmap::Config;
+use agentlens::types::{FileEntry, MemoryEntry, Symbol};
+use agentlens::Config;
 
 fn main() -> Result<()> {
     let args = Args::parse();
@@ -58,7 +58,7 @@ fn main() -> Result<()> {
         }
         Some(Command::Serve { mcp, port }) => {
             if !mcp && port.is_none() {
-                eprintln!("Usage: agentmap serve --mcp [--port PORT]");
+                eprintln!("Usage: agentlens serve --mcp [--port PORT]");
                 eprintln!("  --mcp        Run in MCP mode (stdio transport)");
                 eprintln!("  --port PORT  Use HTTP/SSE transport on specified port");
                 std::process::exit(1);
@@ -392,7 +392,7 @@ fn run_hierarchical_output(
 
     let warning_count = all_memory
         .iter()
-        .filter(|m| m.priority == agentmap::types::Priority::High)
+        .filter(|m| m.priority == agentlens::types::Priority::High)
         .count();
 
     let git_head = get_git_head(work_path);
@@ -517,14 +517,14 @@ fn run_init(
     }
 
     if let Some(template_arg) = templates {
-        let agentmap_dir = output.to_string_lossy();
-        run_templates(path, template_arg, &agentmap_dir)?;
+        let agentlens_dir = output.to_string_lossy();
+        run_templates(path, template_arg, &agentlens_dir)?;
         did_something = true;
     }
 
     if !did_something {
-        eprintln!("Usage: agentmap init [--config] [--hooks] [--templates[=TOOLS]]");
-        eprintln!("  --config              Create agentmap.toml with default settings");
+        eprintln!("Usage: agentlens init [--config] [--hooks] [--templates[=TOOLS]]");
+        eprintln!("  --config              Create agentlens.toml with default settings");
         eprintln!("  --hooks               Install git hooks for automatic regeneration");
         eprintln!("  --templates           Generate AI tool templates (all by default)");
         eprintln!("  --templates=cursor    Generate only Cursor (.cursorrules)");

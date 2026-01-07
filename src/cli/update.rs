@@ -1,8 +1,8 @@
 use anyhow::{Context, Result};
 
 const REPO_OWNER: &str = "nguyenphutrong";
-const REPO_NAME: &str = "agentmap";
-const BIN_NAME: &str = "agentmap";
+const REPO_NAME: &str = "agentlens";
+const BIN_NAME: &str = "agentlens";
 
 pub fn run_update() -> Result<()> {
     let current_version = env!("CARGO_PKG_VERSION");

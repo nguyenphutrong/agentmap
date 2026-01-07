@@ -4,10 +4,10 @@ use std::path::Path;
 
 use crate::generate::{generate_template, parse_template_types, TemplateConfig, TemplateType};
 
-const AGENTMAP_MARKER: &str = "# Agentmap Integration";
-const AGENTMAP_MARKER_ALT: &str = "## Agentmap Documentation";
+const AGENTLENS_MARKER: &str = "# Agentmap Integration";
+const AGENTLENS_MARKER_ALT: &str = "## Agentmap Documentation";
 
-pub fn run_templates(path: &Path, templates_arg: Option<String>, agentmap_dir: &str) -> Result<()> {
+pub fn run_templates(path: &Path, templates_arg: Option<String>, agentlens_dir: &str) -> Result<()> {
     let template_types = match templates_arg {
         Some(ref s) if !s.is_empty() => parse_template_types(s)
             .ok_or_else(|| anyhow::anyhow!("Invalid template type(s): {}", s))?,
@@ -16,7 +16,7 @@ pub fn run_templates(path: &Path, templates_arg: Option<String>, agentmap_dir: &
 
     let config = TemplateConfig {
         project_name: infer_project_name(path),
-        agentmap_dir,
+        agentlens_dir,
     };
 
     let mut created_count = 0;
@@ -71,8 +71,8 @@ fn write_template_file(path: &Path, content: &str) -> TemplateWriteResult {
             Err(e) => return TemplateWriteResult::Error(e.to_string()),
         };
 
-        if existing.contains(AGENTMAP_MARKER) || existing.contains(AGENTMAP_MARKER_ALT) {
-            return TemplateWriteResult::Skipped("agentmap section already exists".to_string());
+        if existing.contains(AGENTLENS_MARKER) || existing.contains(AGENTLENS_MARKER_ALT) {
+            return TemplateWriteResult::Skipped("agentlens section already exists".to_string());
         }
 
         let new_content = format!("{}\n\n{}", existing.trim_end(), content);
@@ -163,7 +163,7 @@ mod tests {
     fn test_run_templates_all() {
         let temp = TempDir::new().unwrap();
 
-        run_templates(temp.path(), None, ".agentmap").unwrap();
+        run_templates(temp.path(), None, ".agentlens").unwrap();
 
         assert!(temp.path().join(".cursorrules").exists());
         assert!(temp.path().join("CLAUDE.md").exists());
@@ -174,7 +174,7 @@ mod tests {
     fn test_run_templates_selective() {
         let temp = TempDir::new().unwrap();
 
-        run_templates(temp.path(), Some("cursor".to_string()), ".agentmap").unwrap();
+        run_templates(temp.path(), Some("cursor".to_string()), ".agentlens").unwrap();
 
         assert!(temp.path().join(".cursorrules").exists());
         assert!(!temp.path().join("CLAUDE.md").exists());
@@ -185,7 +185,7 @@ mod tests {
     fn test_run_templates_multiple_selective() {
         let temp = TempDir::new().unwrap();
 
-        run_templates(temp.path(), Some("cursor,claude".to_string()), ".agentmap").unwrap();
+        run_templates(temp.path(), Some("cursor,claude".to_string()), ".agentlens").unwrap();
 
         assert!(temp.path().join(".cursorrules").exists());
         assert!(temp.path().join("CLAUDE.md").exists());

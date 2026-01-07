@@ -1,4 +1,4 @@
-# agentmap
+# agentlens
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Rust](https://img.shields.io/badge/rust-1.70%2B-orange.svg)](https://www.rust-lang.org/)
@@ -9,10 +9,10 @@
 
 ## Công Dụng
 
-agentmap quét codebase và tạo ra **cấu trúc tài liệu phân cấp** theo module:
+agentlens quét codebase và tạo ra **cấu trúc tài liệu phân cấp** theo module:
 
 ```
-.agentmap/
+.agentlens/
 ├── INDEX.md              # L0: Bảng định hướng toàn cục
 ├── modules/
 │   └── {module-slug}/
@@ -37,7 +37,7 @@ agentmap quét codebase và tạo ra **cấu trúc tài liệu phân cấp** the
 
 ## Tại Sao Cần?
 
-AI coding assistants gặp khó khăn với codebase lớn vì không thể thấy toàn cảnh. agentmap cung cấp:
+AI coding assistants gặp khó khăn với codebase lớn vì không thể thấy toàn cảnh. agentlens cung cấp:
 
 - **Điều hướng phân cấp** để AI chỉ load module cần thiết
 - **Module detection** để gom file thành các nhóm có ý nghĩa
@@ -49,26 +49,26 @@ AI coding assistants gặp khó khăn với codebase lớn vì không thể th�
 ### Cài Nhanh (Khuyến nghị)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nguyenphutrong/agentmap/main/scripts/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/nguyenphutrong/agentlens/main/scripts/install.sh | sh
 ```
 
 ### Từ crates.io
 
 ```bash
-cargo install agentmap
+cargo install agentlens
 ```
 
 ### Từ Source
 
 ```bash
-git clone https://github.com/nguyenphutrong/agentmap
-cd agentmap
+git clone https://github.com/nguyenphutrong/agentlens
+cd agentlens
 cargo install --path .
 ```
 
 ### Tải Thủ Công
 
-Tải prebuilt binaries từ [GitHub Releases](https://github.com/nguyenphutrong/agentmap/releases).
+Tải prebuilt binaries từ [GitHub Releases](https://github.com/nguyenphutrong/agentlens/releases).
 
 ## Cách Dùng
 
@@ -76,59 +76,59 @@ Tải prebuilt binaries từ [GitHub Releases](https://github.com/nguyenphutrong
 
 ```bash
 # Tạo docs cho thư mục hiện tại (hierarchical mode - mặc định)
-agentmap
+agentlens
 
 # Output ra thư mục tùy chỉnh
-agentmap -o docs/ai
+agentlens -o docs/ai
 
 # Xem trước mà không ghi file
-agentmap --dry-run
+agentlens --dry-run
 
 # Output chi tiết
-agentmap -v
+agentlens -v
 ```
 
 ### Remote Repositories
 
 ```bash
 # Phân tích GitHub repo trực tiếp
-agentmap github.com/user/repo
-agentmap https://github.com/vercel/next.js
+agentlens github.com/user/repo
+agentlens https://github.com/vercel/next.js
 
 # Giới hạn depth cho repo lớn
-agentmap --depth 3 github.com/facebook/react
+agentlens --depth 3 github.com/facebook/react
 ```
 
 ### Git Diff Mode
 
 ```bash
 # Chỉ show các file thay đổi từ branch
-agentmap --diff main
+agentlens --diff main
 
 # So sánh với commit cụ thể
-agentmap --diff HEAD~5
+agentlens --diff HEAD~5
 ```
 
 ### JSON Output
 
 ```bash
 # Output analysis dưới dạng JSON (cho tooling integration)
-agentmap --json > analysis.json
+agentlens --json > analysis.json
 
 # Kết hợp với flags khác
-agentmap --json --depth 2 github.com/user/repo
+agentlens --json --depth 2 github.com/user/repo
 ```
 
 ### Options
 
 ```
-Usage: agentmap [OPTIONS] [PATH]
+Usage: agentlens [OPTIONS] [PATH]
 
 Arguments:
   [PATH]  Thư mục đích hoặc GitHub URL [default: .]
 
 Options:
-  -o, --output <OUTPUT>              Thư mục output [default: .agentmap]
+  -o, --output <OUTPUT>              Thư mục output [default: .agentlens]
   -t, --threshold <THRESHOLD>        Ngưỡng số dòng cho file "lớn" [default: 500]
   -c, --complex-threshold <COMPLEX>  Ngưỡng symbol cho L2 file docs [default: 30]
   -d, --depth <DEPTH>                Max directory depth (0 = unlimited)
@@ -149,8 +149,8 @@ Options:
 Commands:
   watch   Theo dõi file changes và tự động regenerate docs
   hooks   Quản lý git hooks cho auto-regeneration
-  init    Khởi tạo cấu hình agentmap
-  update  Cập nhật agentmap lên phiên bản mới nhất
+  init    Khởi tạo cấu hình agentlens
+  update  Cập nhật agentlens lên phiên bản mới nhất
 ```
 
 ## Watch Mode
@@ -159,10 +159,10 @@ Giữ docs luôn đồng bộ trong quá trình development:
 
 ```bash
 # Bắt đầu theo dõi changes (regenerate khi save file)
-agentmap watch
+agentlens watch
 
 # Tuỳ chỉnh debounce delay (mặc định: 300ms)
-agentmap watch --debounce 500
+agentlens watch --debounce 500
 ```
 
 Watch mode tận dụng hệ thống manifest incremental, nên chỉ modules thay đổi được regenerate.
@@ -173,36 +173,36 @@ Tự động regenerate docs tại các git events quan trọng:
 
 ```bash
 # Cài hooks (pre-commit, post-checkout, post-merge)
-agentmap hooks install
+agentlens hooks install
 
 # Gỡ hooks
-agentmap hooks remove
+agentlens hooks remove
 
 # Bỏ qua hooks tạm thời
-AGENTMAP_SKIP=1 git commit -m "quick fix"
+AGENTLENS_SKIP=1 git commit -m "quick fix"
 ```
 
 Các hooks được cài:
-- **pre-commit**: Regenerate docs và stage `.agentmap/`
+- **pre-commit**: Regenerate docs và stage `.agentlens/`
 - **post-checkout**: Regenerate sau khi đổi branch (chạy nền)
 - **post-merge**: Regenerate sau pull/merge (chạy nền)
 
 ## Configuration File
 
-Tạo `agentmap.toml` cho cài đặt riêng của project:
+Tạo `agentlens.toml` cho cài đặt riêng của project:
 
 ```bash
 # Tạo config file mặc định
-agentmap init --config
+agentlens init --config
 
 # Dùng config tùy chỉnh
-agentmap --config custom.toml
+agentlens --config custom.toml
 ```
 
-Ví dụ `agentmap.toml`:
+Ví dụ `agentlens.toml`:
 
 ```toml
-output = ".agentmap"
+output = ".agentlens"
 threshold = 500
 complex_threshold = 1000
 ignore = ["*.test.ts", "fixtures/", "__mocks__/"]
@@ -215,14 +215,14 @@ CLI flags ghi đè giá trị config file.
 
 ## MCP Server
 
-agentmap có thể chạy như MCP server cho các AI tools như Claude Desktop và Cursor:
+agentlens có thể chạy như MCP server cho các AI tools như Claude Desktop và Cursor:
 
 ```bash
 # Sử dụng npx (không cần cài đặt)
-npx agentmap-cli serve --mcp
+npx agentlens-cli serve --mcp
 
 # Hoặc nếu đã cài global
-agentmap serve --mcp
+agentlens serve --mcp
 ```
 
 **Các tools có sẵn:**
@@ -239,9 +239,9 @@ agentmap serve --mcp
 ```json
 {
   "mcpServers": {
-    "agentmap": {
+    "agentlens": {
       "command": "npx",
-      "args": ["agentmap-cli", "serve", "--mcp"]
+      "args": ["agentlens-cli", "serve", "--mcp"]
     }
   }
 }
@@ -255,10 +255,10 @@ Validate docs freshness trong CI pipelines:
 
 ```bash
 # Kiểm tra docs có stale không (exit 0 = fresh, exit 1 = stale)
-agentmap --check
+agentlens --check
 
 # Kết hợp với diff mode
-agentmap --check --diff main
+agentlens --check --diff main
 ```
 
 Ví dụ GitHub Actions workflow:
@@ -272,15 +272,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install agentmap
-        run: cargo install agentmap
+      - name: Install agentlens
+        run: cargo install agentlens
       - name: Check docs freshness
-        run: agentmap --check
+        run: agentlens --check
 ```
 
 ## Module Detection
 
-agentmap tự động phát hiện module boundary dựa vào quy ước theo ngôn ngữ:
+agentlens tự động phát hiện module boundary dựa vào quy ước theo ngôn ngữ:
 
 | Ngôn ngữ | Boundary rõ ràng | Ví dụ |
 |----------|------------------|-------|
@@ -405,7 +405,7 @@ agentmap tự động phát hiện module boundary dựa vào quy ước theo ng
 
 ## Memory Markers
 
-agentmap trích xuất các comment patterns sau:
+agentlens trích xuất các comment patterns sau:
 
 | Pattern | Category | Priority |
 |---------|----------|----------|
@@ -424,7 +424,7 @@ Thêm vào AI instructions của project:
 
 ```
 Trước khi làm việc với codebase này, đọc:
-1. .agentmap/INDEX.md - tổng quan và điều hướng module
+1. .agentlens/INDEX.md - tổng quan và điều hướng module
 2. Navigate to module's MODULE.md để biết chi tiết
 3. Kiểm tra module's memory.md trước khi edit
 4. Consult module's outline.md để điều hướng file lớn
@@ -432,14 +432,14 @@ Trước khi làm việc với codebase này, đọc:
 
 ### GitHub Copilot
 
-Include `.agentmap/` trong workspace context.
+Include `.agentlens/` trong workspace context.
 
 ### JSON Integration
 
 Cho programmatic access:
 
 ```bash
-agentmap --json | jq '.modules[] | {slug, file_count, warning_count}'
+agentlens --json | jq '.modules[] | {slug, file_count, warning_count}'
 ```
 
 JSON output gồm:

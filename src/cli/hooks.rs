@@ -25,42 +25,42 @@ impl std::fmt::Display for HookManager {
 }
 
 const PRE_COMMIT_HOOK: &str = r#"#!/bin/sh
-# agentmap pre-commit hook
+# agentlens pre-commit hook
 
-if [ -n "$AGENTMAP_SKIP" ]; then
+if [ -n "$AGENTLENS_SKIP" ]; then
     exit 0
 fi
 
-if command -v agentmap >/dev/null 2>&1; then
-    agentmap --quiet
-    git add .agentmap/ 2>/dev/null || true
+if command -v agentlens >/dev/null 2>&1; then
+    agentlens --quiet
+    git add .agentlens/ 2>/dev/null || true
 fi
 "#;
 
 const POST_CHECKOUT_HOOK: &str = r#"#!/bin/sh
-# agentmap post-checkout hook
+# agentlens post-checkout hook
 
-if [ -n "$AGENTMAP_SKIP" ]; then
+if [ -n "$AGENTLENS_SKIP" ]; then
     exit 0
 fi
 
 # Only run on branch checkout (not file checkout)
 if [ "$3" = "1" ]; then
-    if command -v agentmap >/dev/null 2>&1; then
-        agentmap --quiet &
+    if command -v agentlens >/dev/null 2>&1; then
+        agentlens --quiet &
     fi
 fi
 "#;
 
 const POST_MERGE_HOOK: &str = r#"#!/bin/sh
-# agentmap post-merge hook
+# agentlens post-merge hook
 
-if [ -n "$AGENTMAP_SKIP" ]; then
+if [ -n "$AGENTLENS_SKIP" ]; then
     exit 0
 fi
 
-if command -v agentmap >/dev/null 2>&1; then
-    agentmap --quiet &
+if command -v agentlens >/dev/null 2>&1; then
+    agentlens --quiet &
 fi
 "#;
 
@@ -113,7 +113,7 @@ pub fn install_hooks_with_manager(
         detect_hook_manager(path)
     };
 
-    eprintln!("Detected: {} → Installing agentmap hooks", manager);
+    eprintln!("Detected: {} → Installing agentlens hooks", manager);
 
     match manager {
         HookManager::Native => install_native_hooks(path),
@@ -137,11 +137,11 @@ fn install_native_hooks(path: &Path) -> Result<()> {
     install_native_hook(&hooks_dir, "post-checkout", POST_CHECKOUT_HOOK)?;
     install_native_hook(&hooks_dir, "post-merge", POST_MERGE_HOOK)?;
 
-    eprintln!("Installed agentmap git hooks:");
-    eprintln!("  - pre-commit: regenerate docs and stage .agentmap/");
+    eprintln!("Installed agentlens git hooks:");
+    eprintln!("  - pre-commit: regenerate docs and stage .agentlens/");
     eprintln!("  - post-checkout: regenerate docs after branch switch");
     eprintln!("  - post-merge: regenerate docs after pull/merge");
-    eprintln!("\nTo skip hooks, set AGENTMAP_SKIP=1");
+    eprintln!("\nTo skip hooks, set AGENTLENS_SKIP=1");
 
     Ok(())
 }
@@ -155,45 +155,45 @@ fn install_husky_hooks(path: &Path) -> Result<()> {
 
     let pre_commit_content = r#"#!/bin/sh
 
-if [ -n "$AGENTMAP_SKIP" ]; then
+if [ -n "$AGENTLENS_SKIP" ]; then
     exit 0
 fi
 
-if command -v agentmap >/dev/null 2>&1; then
-    agentmap --quiet
-    git add .agentmap/ 2>/dev/null || true
+if command -v agentlens >/dev/null 2>&1; then
+    agentlens --quiet
+    git add .agentlens/ 2>/dev/null || true
 elif command -v npx >/dev/null 2>&1; then
-    npx agentmap-cli --quiet
-    git add .agentmap/ 2>/dev/null || true
+    npx agentlens-cli --quiet
+    git add .agentlens/ 2>/dev/null || true
 fi
 "#;
 
     let post_checkout_content = r#"#!/bin/sh
 
-if [ -n "$AGENTMAP_SKIP" ]; then
+if [ -n "$AGENTLENS_SKIP" ]; then
     exit 0
 fi
 
 # Only run on branch checkout (not file checkout)
 if [ "$3" = "1" ]; then
-    if command -v agentmap >/dev/null 2>&1; then
-        agentmap --quiet &
+    if command -v agentlens >/dev/null 2>&1; then
+        agentlens --quiet &
     elif command -v npx >/dev/null 2>&1; then
-        npx agentmap-cli --quiet &
+        npx agentlens-cli --quiet &
     fi
 fi
 "#;
 
     let post_merge_content = r#"#!/bin/sh
 
-if [ -n "$AGENTMAP_SKIP" ]; then
+if [ -n "$AGENTLENS_SKIP" ]; then
     exit 0
 fi
 
-if command -v agentmap >/dev/null 2>&1; then
-    agentmap --quiet &
+if command -v agentlens >/dev/null 2>&1; then
+    agentlens --quiet &
 elif command -v npx >/dev/null 2>&1; then
-    npx agentmap-cli --quiet &
+    npx agentlens-cli --quiet &
 fi
 "#;
 
@@ -201,11 +201,11 @@ fi
     install_husky_hook(&husky_dir, "post-checkout", post_checkout_content)?;
     install_husky_hook(&husky_dir, "post-merge", post_merge_content)?;
 
-    eprintln!("Installed agentmap Husky hooks:");
+    eprintln!("Installed agentlens Husky hooks:");
     eprintln!("  - .husky/pre-commit");
     eprintln!("  - .husky/post-checkout");
     eprintln!("  - .husky/post-merge");
-    eprintln!("\nTo skip hooks, set AGENTMAP_SKIP=1");
+    eprintln!("\nTo skip hooks, set AGENTLENS_SKIP=1");
 
     Ok(())
 }
@@ -215,13 +215,13 @@ fn install_husky_hook(husky_dir: &Path, name: &str, content: &str) -> Result<()>
 
     if hook_path.exists() {
         let existing = fs::read_to_string(&hook_path).unwrap_or_default();
-        if existing.contains("agentmap") {
-            eprintln!("  .husky/{} already contains agentmap, skipping", name);
+        if existing.contains("agentlens") {
+            eprintln!("  .husky/{} already contains agentlens, skipping", name);
             return Ok(());
         }
 
         let combined = format!(
-            "{}\n\n# --- agentmap ---\n{}",
+            "{}\n\n# --- agentlens ---\n{}",
             existing.trim(),
             content.lines().skip(1).collect::<Vec<_>>().join("\n")
         );
@@ -256,73 +256,73 @@ fn install_lefthook_hooks(path: &Path) -> Result<()> {
         .find(|p| p.exists())
         .unwrap_or_else(|| path.join("lefthook.yml"));
 
-    let agentmap_config = r#"
-# --- agentmap hooks ---
+    let agentlens_config = r#"
+# --- agentlens hooks ---
 pre-commit:
   commands:
-    agentmap:
+    agentlens:
       run: |
-        if [ -z "$AGENTMAP_SKIP" ]; then
-          if command -v agentmap >/dev/null 2>&1; then
-            agentmap --quiet && git add .agentmap/ 2>/dev/null || true
+        if [ -z "$AGENTLENS_SKIP" ]; then
+          if command -v agentlens >/dev/null 2>&1; then
+            agentlens --quiet && git add .agentlens/ 2>/dev/null || true
           elif command -v npx >/dev/null 2>&1; then
-            npx agentmap-cli --quiet && git add .agentmap/ 2>/dev/null || true
+            npx agentlens-cli --quiet && git add .agentlens/ 2>/dev/null || true
           fi
         fi
       stage_fixed: true
 
 post-checkout:
   commands:
-    agentmap:
+    agentlens:
       run: |
-        if [ -z "$AGENTMAP_SKIP" ] && [ "$LEFTHOOK_GIT_CHECKOUT_TYPE" = "branch" ]; then
-          if command -v agentmap >/dev/null 2>&1; then
-            agentmap --quiet &
+        if [ -z "$AGENTLENS_SKIP" ] && [ "$LEFTHOOK_GIT_CHECKOUT_TYPE" = "branch" ]; then
+          if command -v agentlens >/dev/null 2>&1; then
+            agentlens --quiet &
           elif command -v npx >/dev/null 2>&1; then
-            npx agentmap-cli --quiet &
+            npx agentlens-cli --quiet &
           fi
         fi
 
 post-merge:
   commands:
-    agentmap:
+    agentlens:
       run: |
-        if [ -z "$AGENTMAP_SKIP" ]; then
-          if command -v agentmap >/dev/null 2>&1; then
-            agentmap --quiet &
+        if [ -z "$AGENTLENS_SKIP" ]; then
+          if command -v agentlens >/dev/null 2>&1; then
+            agentlens --quiet &
           elif command -v npx >/dev/null 2>&1; then
-            npx agentmap-cli --quiet &
+            npx agentlens-cli --quiet &
           fi
         fi
 "#;
 
     if config_path.exists() {
         let existing = fs::read_to_string(&config_path).unwrap_or_default();
-        if existing.contains("agentmap") {
+        if existing.contains("agentlens") {
             eprintln!(
-                "  {} already contains agentmap, skipping",
+                "  {} already contains agentlens, skipping",
                 config_path.display()
             );
             return Ok(());
         }
 
-        let combined = format!("{}\n{}", existing.trim(), agentmap_config);
+        let combined = format!("{}\n{}", existing.trim(), agentlens_config);
         fs::write(&config_path, combined)
             .context(format!("Failed to update {}", config_path.display()))?;
         eprintln!("  {} updated", config_path.display());
     } else {
         let content = format!(
             "# Lefthook configuration\n# https://github.com/evilmartians/lefthook\n{}",
-            agentmap_config
+            agentlens_config
         );
         fs::write(&config_path, content)
             .context(format!("Failed to create {}", config_path.display()))?;
         eprintln!("  {} created", config_path.display());
     }
 
-    eprintln!("\nInstalled agentmap Lefthook hooks.");
+    eprintln!("\nInstalled agentlens Lefthook hooks.");
     eprintln!("Run 'lefthook install' to activate hooks.");
-    eprintln!("\nTo skip hooks, set AGENTMAP_SKIP=1");
+    eprintln!("\nTo skip hooks, set AGENTLENS_SKIP=1");
 
     Ok(())
 }
@@ -336,13 +336,13 @@ fn install_pre_commit_hooks(path: &Path) -> Result<()> {
         .find(|p| p.exists())
         .unwrap_or_else(|| path.join(".pre-commit-config.yaml"));
 
-    let agentmap_repo = r#"
-  # --- agentmap ---
+    let agentlens_repo = r#"
+  # --- agentlens ---
   - repo: local
     hooks:
-      - id: agentmap
-        name: agentmap
-        entry: sh -c 'if [ -z "$AGENTMAP_SKIP" ]; then if command -v agentmap >/dev/null 2>&1; then agentmap --quiet && git add .agentmap/; elif command -v npx >/dev/null 2>&1; then npx agentmap-cli --quiet && git add .agentmap/; fi; fi'
+      - id: agentlens
+        name: agentlens
+        entry: sh -c 'if [ -z "$AGENTLENS_SKIP" ]; then if command -v agentlens >/dev/null 2>&1; then agentlens --quiet && git add .agentlens/; elif command -v npx >/dev/null 2>&1; then npx agentlens-cli --quiet && git add .agentlens/; fi; fi'
         language: system
         always_run: true
         pass_filenames: false
@@ -351,33 +351,33 @@ fn install_pre_commit_hooks(path: &Path) -> Result<()> {
 
     if config_path.exists() {
         let existing = fs::read_to_string(&config_path).unwrap_or_default();
-        if existing.contains("agentmap") {
+        if existing.contains("agentlens") {
             eprintln!(
-                "  {} already contains agentmap, skipping",
+                "  {} already contains agentlens, skipping",
                 config_path.display()
             );
             return Ok(());
         }
 
-        let combined = format!("{}\n{}", existing.trim(), agentmap_repo);
+        let combined = format!("{}\n{}", existing.trim(), agentlens_repo);
         fs::write(&config_path, combined)
             .context(format!("Failed to update {}", config_path.display()))?;
         eprintln!("  {} updated", config_path.display());
     } else {
         let content = format!(
             "# Pre-commit configuration\n# https://pre-commit.com\nrepos:{}\n",
-            agentmap_repo
+            agentlens_repo
         );
         fs::write(&config_path, content)
             .context(format!("Failed to create {}", config_path.display()))?;
         eprintln!("  {} created", config_path.display());
     }
 
-    eprintln!("\nInstalled agentmap pre-commit hook.");
+    eprintln!("\nInstalled agentlens pre-commit hook.");
     eprintln!("Run 'pre-commit install' to activate hooks.");
     eprintln!("\nNote: post-checkout and post-merge hooks are not supported by pre-commit.");
-    eprintln!("Consider using 'agentmap hooks install --native' for full hook support.");
-    eprintln!("\nTo skip hooks, set AGENTMAP_SKIP=1");
+    eprintln!("Consider using 'agentlens hooks install --native' for full hook support.");
+    eprintln!("\nTo skip hooks, set AGENTLENS_SKIP=1");
 
     Ok(())
 }
@@ -385,7 +385,7 @@ fn install_pre_commit_hooks(path: &Path) -> Result<()> {
 pub fn remove_hooks(path: &Path) -> Result<()> {
     let manager = detect_hook_manager(path);
 
-    eprintln!("Detected: {} → Removing agentmap hooks", manager);
+    eprintln!("Detected: {} → Removing agentlens hooks", manager);
 
     match manager {
         HookManager::Native => remove_native_hooks(path),
@@ -403,7 +403,7 @@ fn remove_native_hooks(path: &Path) -> Result<()> {
     remove_native_hook(&hooks_dir, "post-checkout")?;
     remove_native_hook(&hooks_dir, "post-merge")?;
 
-    eprintln!("Removed agentmap git hooks");
+    eprintln!("Removed agentlens git hooks");
 
     Ok(())
 }
@@ -415,10 +415,10 @@ fn remove_husky_hooks(path: &Path) -> Result<()> {
         let hook_path = husky_dir.join(name);
         if hook_path.exists() {
             let content = fs::read_to_string(&hook_path).unwrap_or_default();
-            if content.contains("agentmap") {
-                if content.contains("# --- agentmap ---") {
+            if content.contains("agentlens") {
+                if content.contains("# --- agentlens ---") {
                     let cleaned = content
-                        .split("# --- agentmap ---")
+                        .split("# --- agentlens ---")
                         .next()
                         .unwrap_or("")
                         .trim();
@@ -427,7 +427,7 @@ fn remove_husky_hooks(path: &Path) -> Result<()> {
                         eprintln!("  .husky/{} removed", name);
                     } else {
                         fs::write(&hook_path, cleaned)?;
-                        eprintln!("  .husky/{} updated (agentmap section removed)", name);
+                        eprintln!("  .husky/{} updated (agentlens section removed)", name);
                     }
                 } else {
                     fs::remove_file(&hook_path)?;
@@ -437,7 +437,7 @@ fn remove_husky_hooks(path: &Path) -> Result<()> {
         }
     }
 
-    eprintln!("Removed agentmap Husky hooks");
+    eprintln!("Removed agentlens Husky hooks");
 
     Ok(())
 }
@@ -454,19 +454,19 @@ fn remove_lefthook_hooks(path: &Path) -> Result<()> {
         let config_path = path.join(config_file);
         if config_path.exists() {
             let content = fs::read_to_string(&config_path).unwrap_or_default();
-            if content.contains("# --- agentmap hooks ---") {
+            if content.contains("# --- agentlens hooks ---") {
                 let cleaned = content
-                    .split("# --- agentmap hooks ---")
+                    .split("# --- agentlens hooks ---")
                     .next()
                     .unwrap_or("")
                     .trim();
                 fs::write(&config_path, format!("{}\n", cleaned))?;
-                eprintln!("  {} updated (agentmap section removed)", config_file);
+                eprintln!("  {} updated (agentlens section removed)", config_file);
             }
         }
     }
 
-    eprintln!("Removed agentmap Lefthook hooks");
+    eprintln!("Removed agentlens Lefthook hooks");
 
     Ok(())
 }
@@ -478,19 +478,19 @@ fn remove_pre_commit_hooks(path: &Path) -> Result<()> {
         let config_path = path.join(config_file);
         if config_path.exists() {
             let content = fs::read_to_string(&config_path).unwrap_or_default();
-            if content.contains("# --- agentmap ---") {
+            if content.contains("# --- agentlens ---") {
                 let cleaned = content
-                    .split("# --- agentmap ---")
+                    .split("# --- agentlens ---")
                     .next()
                     .unwrap_or("")
                     .trim();
                 fs::write(&config_path, format!("{}\n", cleaned))?;
-                eprintln!("  {} updated (agentmap section removed)", config_file);
+                eprintln!("  {} updated (agentlens section removed)", config_file);
             }
         }
     }
 
-    eprintln!("Removed agentmap pre-commit hooks");
+    eprintln!("Removed agentlens pre-commit hooks");
 
     Ok(())
 }
@@ -514,13 +514,13 @@ fn install_native_hook(hooks_dir: &Path, name: &str, content: &str) -> Result<()
 
     if hook_path.exists() {
         let existing = fs::read_to_string(&hook_path).unwrap_or_default();
-        if existing.contains("agentmap") {
-            eprintln!("  {} hook already contains agentmap, skipping", name);
+        if existing.contains("agentlens") {
+            eprintln!("  {} hook already contains agentlens, skipping", name);
             return Ok(());
         }
 
         let combined = format!(
-            "{}\n\n# --- agentmap hook ---\n{}",
+            "{}\n\n# --- agentlens hook ---\n{}",
             existing.trim(),
             content.trim()
         );
@@ -550,13 +550,13 @@ fn remove_native_hook(hooks_dir: &Path, name: &str) -> Result<()> {
 
     let content = fs::read_to_string(&hook_path).unwrap_or_default();
 
-    if !content.contains("agentmap") {
+    if !content.contains("agentlens") {
         return Ok(());
     }
 
-    if content.contains("# --- agentmap hook ---") {
+    if content.contains("# --- agentlens hook ---") {
         let cleaned: Vec<&str> = content
-            .split("# --- agentmap hook ---")
+            .split("# --- agentlens hook ---")
             .next()
             .unwrap_or("")
             .trim()
@@ -569,7 +569,7 @@ fn remove_native_hook(hooks_dir: &Path, name: &str) -> Result<()> {
         } else {
             fs::write(&hook_path, cleaned.join("\n"))
                 .context(format!("Failed to update {} hook", name))?;
-            eprintln!("  {} hook updated (agentmap section removed)", name);
+            eprintln!("  {} hook updated (agentlens section removed)", name);
         }
     } else {
         fs::remove_file(&hook_path).context(format!("Failed to remove {} hook", name))?;
