@@ -1,240 +1,180 @@
-# agentlens
+<div align="center">
+
+# 🔍 agentlens
+
+**Cho AI assistant khả năng nhìn xuyên thấu codebase của bạn**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Rust](https://img.shields.io/badge/rust-1.70%2B-orange.svg)](https://www.rust-lang.org/)
+[![npm](https://img.shields.io/npm/v/@agentlens/cli)](https://www.npmjs.com/package/@agentlens/cli)
+[![Homebrew](https://img.shields.io/badge/homebrew-available-blue)](https://github.com/nguyenphutrong/homebrew-tap)
 
-**Chuẩn bị codebase cho AI agents** bằng cách tạo tài liệu có cấu trúc giúp trợ lý AI hiểu và điều hướng code của bạn hiệu quả hơn.
+[🇬🇧 English](README.md) · [Bắt Đầu Nhanh](#-bắt-đầu-nhanh) · [Tài Liệu](#-tài-liệu)
 
-[🇬🇧 English](README.md)
+</div>
 
-## Công Dụng
+---
 
-agentlens quét codebase và tạo ra **cấu trúc tài liệu phân cấp** theo module:
+## Vấn Đề
+
+AI coding assistants bị **mù** trong codebase lớn. Chúng không thể thấy:
+- Có những module nào và chúng liên kết ra sao
+- Có gì trong file mà không đọc toàn bộ
+- Warnings và TODOs đang ẩn ở đâu
+- Cách điều hướng hiệu quả
+
+## Giải Pháp
+
+**agentlens** tạo ra một lớp tài liệu có cấu trúc giúp AI assistants có bản đồ codebase:
 
 ```
 .agentlens/
-├── INDEX.md              # L0: Bảng định hướng toàn cục
+├── INDEX.md              # 🗺️  Bảng định hướng toàn cục
 ├── modules/
-│   └── {module-slug}/
-│       ├── MODULE.md     # L1: Tóm tắt module
-│       ├── outline.md    # L1: Bản đồ symbol cho module
-│       ├── memory.md     # L1: Warnings/TODOs theo module
-│       └── imports.md    # L1: Dependencies cho module
+│   └── {module}/
+│       ├── MODULE.md     # 📦 Tổng quan module
+│       ├── outline.md    # 🔎 Bản đồ symbol
+│       ├── memory.md     # ⚠️  Warnings & TODOs
+│       └── imports.md    # 🔗 Dependencies
 └── files/
-    └── {file-slug}.md    # L2: Tài liệu chi tiết cho file phức tạp (tùy chọn)
+    └── {file}.md         # 📄 Docs chi tiết (chỉ file phức tạp)
 ```
 
-### Content Hierarchy
+**Kết quả:** AI chỉ load những gì cần. Không còn context overflow. Không còn hallucinations về cấu trúc code.
 
-| Cấp | File | Mục đích | Kích thước |
-|-----|------|----------|------------|
-| L0 | `INDEX.md` | Bảng định hướng tổng quan theo module | O(modules) |
-| L1 | `MODULE.md` | Tóm tắt module, file list, entry points | O(files in module) |
-| L1 | `outline.md` | Bản đồ symbol cho file lớn trong module | O(large files) |
-| L1 | `memory.md` | Warnings và TODOs theo module | O(markers) |
-| L1 | `imports.md` | Phụ thuộc trong module | O(imports) |
-| L2 | `files/*.md` | Tài liệu chi tiết cho file phức tạp | O(symbols) |
+---
 
-## Tại Sao Cần?
+## ⚡ Bắt Đầu Nhanh
 
-AI coding assistants gặp khó khăn với codebase lớn vì không thể thấy toàn cảnh. agentlens cung cấp:
-
-- **Điều hướng phân cấp** để AI chỉ load module cần thiết
-- **Module detection** để gom file thành các nhóm có ý nghĩa
-- **Symbol maps** để biết có gì trong file lớn mà không đọc toàn bộ
-- **Scoped context** để docs chỉ chứa thông tin liên quan
-
-## Cài Đặt
-
-### Cài Nhanh (Khuyến nghị)
+### Cài Đặt
 
 ```bash
+# npm/pnpm/yarn/bun - Khuyến nghị
+npx @agentlens/cli            # Chạy không cần cài
+npm install -g @agentlens/cli
+pnpm add -g @agentlens/cli
+yarn global add @agentlens/cli
+bun add -g @agentlens/cli
+
+# Homebrew (macOS)
+brew install nguyenphutrong/tap/agentlens
+
+# Cargo
+cargo install agentlens
+
+# Script cài nhanh
 curl -fsSL https://raw.githubusercontent.com/nguyenphutrong/agentlens/main/scripts/install.sh | sh
 ```
 
-### Từ crates.io
+**Cách khác:** Copy prompt này cho AI coding assistant của bạn:
 
-```bash
-cargo install agentlens
+```
+Install and configure agentlens by following the instructions at:
+https://github.com/nguyenphutrong/agentlens/blob/main/docs/ai-agent-setup.md
 ```
 
-### Từ Source
+### Chạy
 
 ```bash
-git clone https://github.com/nguyenphutrong/agentlens
-cd agentlens
-cargo install --path .
-```
-
-### Tải Thủ Công
-
-Tải prebuilt binaries từ [GitHub Releases](https://github.com/nguyenphutrong/agentlens/releases).
-
-## Cách Dùng
-
-### Cơ Bản
-
-```bash
-# Tạo docs cho thư mục hiện tại (hierarchical mode - mặc định)
+# Tạo docs cho thư mục hiện tại
 agentlens
 
-# Output ra thư mục tùy chỉnh
-agentlens -o docs/ai
+# Xong. Kiểm tra .agentlens/INDEX.md
+```
 
-# Xem trước mà không ghi file
-agentlens --dry-run
+### Nói Với AI
 
-# Output chi tiết
-agentlens -v
+Thêm vào instructions của AI (`.cursorrules`, `CLAUDE.md`, v.v.):
+
+```
+Trước khi làm việc với codebase này, đọc .agentlens/INDEX.md để điều hướng.
+```
+
+---
+
+## ✨ Tính Năng Chính
+
+| Tính năng | Công dụng |
+|-----------|-----------|
+| **🧠 Docs Phân Cấp** | AI load theo module, không phải toàn bộ codebase |
+| **📦 Tự Động Phát Hiện Module** | Tìm `mod.rs`, `__init__.py`, `index.ts` tự động |
+| **🔎 Bản Đồ Symbol** | Biết có gì trong file 1000 dòng mà không đọc hết |
+| **⚠️ Memory Markers** | Hiển thị `TODO`, `FIXME`, `WARNING` comments |
+| **🔗 Import Graphs** | Cho thấy các module phụ thuộc nhau thế nào |
+| **⚡ Cập Nhật Incremental** | Chỉ regenerate modules đã thay đổi |
+| **👀 Watch Mode** | Tự động regenerate khi save file |
+| **🪝 Git Hooks** | Giữ docs đồng bộ qua các branches |
+| **🌐 Remote Repos** | Phân tích GitHub repos trực tiếp |
+| **🔌 MCP Server** | Tích hợp native với Claude Desktop & Cursor |
+
+---
+
+## 📖 Tài Liệu
+
+### Cách Dùng Cơ Bản
+
+```bash
+agentlens                    # Tạo docs (hierarchical mode)
+agentlens -o docs/ai         # Thư mục output tùy chỉnh
+agentlens --dry-run          # Xem trước không ghi file
+agentlens -v                 # Output chi tiết
 ```
 
 ### Remote Repositories
 
 ```bash
-# Phân tích GitHub repo trực tiếp
-agentlens github.com/user/repo
-agentlens https://github.com/vercel/next.js
-
-# Giới hạn depth cho repo lớn
+agentlens github.com/vercel/next.js
 agentlens --depth 3 github.com/facebook/react
 ```
 
 ### Git Diff Mode
 
 ```bash
-# Chỉ show các file thay đổi từ branch
-agentlens --diff main
-
-# So sánh với commit cụ thể
-agentlens --diff HEAD~5
+agentlens --diff main        # Chỉ files thay đổi từ main
+agentlens --diff HEAD~5      # So sánh với commit cụ thể
 ```
 
 ### JSON Output
 
 ```bash
-# Output analysis dưới dạng JSON (cho tooling integration)
 agentlens --json > analysis.json
-
-# Kết hợp với flags khác
-agentlens --json --depth 2 github.com/user/repo
+agentlens --json | jq '.modules[] | {slug, file_count}'
 ```
 
-### Options
-
-```
-Usage: agentlens [OPTIONS] [PATH]
-
-Arguments:
-  [PATH]  Thư mục đích hoặc GitHub URL [default: .]
-
-Options:
-  -o, --output <OUTPUT>              Thư mục output [default: .agentlens]
-  -t, --threshold <THRESHOLD>        Ngưỡng số dòng cho file "lớn" [default: 500]
-  -c, --complex-threshold <COMPLEX>  Ngưỡng symbol cho L2 file docs [default: 30]
-  -d, --depth <DEPTH>                Max directory depth (0 = unlimited)
-      --diff <REF>                   So sánh với git branch/commit
-      --json                         Output JSON ra stdout
-      --check                        Kiểm tra docs có stale không (exit 1 nếu cần regenerate)
-      --config <FILE>                Đường dẫn config file
-      --force                        Force regenerate tất cả modules (bỏ qua cache)
-  -i, --ignore <IGNORE>              Patterns bổ sung để bỏ qua
-  -l, --lang <LANG>                  Lọc theo ngôn ngữ
-      --no-gitignore                 Không tuân theo .gitignore
-      --dry-run                      Xem trước mà không ghi file
-  -v, --verbose...                   Tăng mức chi tiết (-v, -vv, -vvv)
-  -q, --quiet                        Không hiển thị output
-  -h, --help                         In help
-  -V, --version                      In version
-
-Commands:
-  watch   Theo dõi file changes và tự động regenerate docs
-  hooks   Quản lý git hooks cho auto-regeneration
-  init    Khởi tạo cấu hình agentlens
-  update  Cập nhật agentlens lên phiên bản mới nhất
-```
-
-## Watch Mode
-
-Giữ docs luôn đồng bộ trong quá trình development:
+### Watch Mode
 
 ```bash
-# Bắt đầu theo dõi changes (regenerate khi save file)
-agentlens watch
-
-# Tuỳ chỉnh debounce delay (mặc định: 300ms)
+agentlens watch              # Tự động regenerate khi file thay đổi
 agentlens watch --debounce 500
 ```
 
-Watch mode tận dụng hệ thống manifest incremental, nên chỉ modules thay đổi được regenerate.
-
-## Git Hooks
-
-Tự động regenerate docs tại các git events quan trọng:
+### Git Hooks
 
 ```bash
-# Cài hooks (pre-commit, post-checkout, post-merge)
-agentlens hooks install
-
-# Gỡ hooks
-agentlens hooks remove
-
-# Bỏ qua hooks tạm thời
-AGENTLENS_SKIP=1 git commit -m "quick fix"
+agentlens hooks install      # Tự động phát hiện Husky/Lefthook/native
+agentlens hooks remove       # Gỡ hooks
+AGENTLENS_SKIP=1 git commit  # Bỏ qua tạm thời
 ```
 
-Các hooks được cài:
-- **pre-commit**: Regenerate docs và stage `.agentlens/`
-- **post-checkout**: Regenerate sau khi đổi branch (chạy nền)
-- **post-merge**: Regenerate sau pull/merge (chạy nền)
+Hỗ trợ: **Husky**, **Lefthook**, **pre-commit**, **native git hooks**
 
-## Configuration File
-
-Tạo `agentlens.toml` cho cài đặt riêng của project:
+### CI Integration
 
 ```bash
-# Tạo config file mặc định
-agentlens init --config
-
-# Dùng config tùy chỉnh
-agentlens --config custom.toml
+agentlens --check            # Exit 1 nếu docs đã stale
 ```
 
-Ví dụ `agentlens.toml`:
-
-```toml
-output = ".agentlens"
-threshold = 500
-complex_threshold = 1000
-ignore = ["*.test.ts", "fixtures/", "__mocks__/"]
-
-[watch]
-debounce_ms = 300
+```yaml
+# .github/workflows/docs.yml
+- name: Check docs freshness
+  run: agentlens --check
 ```
 
-CLI flags ghi đè giá trị config file.
-
-## MCP Server
-
-agentlens có thể chạy như MCP server cho các AI tools như Claude Desktop và Cursor:
+### MCP Server
 
 ```bash
-# Sử dụng npx (không cần cài đặt)
 npx @agentlens/cli serve --mcp
-
-# Hoặc nếu đã cài global
-agentlens serve --mcp
 ```
-
-**Các tools có sẵn:**
-
-| Tool | Mô tả |
-|------|-------|
-| `regenerate` | Regenerate tài liệu |
-| `get_module` | Lấy docs module theo slug |
-| `check_stale` | Kiểm tra docs có cần cập nhật |
-| `get_outline` | Lấy symbol outline cho file |
-
-**Ví dụ MCP config (Claude Desktop, Cursor, etc.):**
 
 ```json
 {
@@ -247,163 +187,43 @@ agentlens serve --mcp
 }
 ```
 
-Xem [MCP Server Documentation](docs/mcp-server.vi.md) để biết hướng dẫn cài đặt và tích hợp.
+Tools: `regenerate`, `get_module`, `check_stale`, `get_outline`
 
-## CI Integration
+---
 
-Validate docs freshness trong CI pipelines:
+## 🗂️ Cấu Trúc Output
 
-```bash
-# Kiểm tra docs có stale không (exit 0 = fresh, exit 1 = stale)
-agentlens --check
+| Level | File | Mục đích | Kích thước |
+|-------|------|----------|------------|
+| **L0** | `INDEX.md` | Bảng định hướng toàn cục | O(modules) |
+| **L1** | `MODULE.md` | Tóm tắt module & danh sách file | O(files) |
+| **L1** | `outline.md` | Bản đồ symbol cho files lớn | O(symbols) |
+| **L1** | `memory.md` | Warnings & TODOs | O(markers) |
+| **L1** | `imports.md` | Dependencies | O(imports) |
+| **L2** | `files/*.md` | Docs chi tiết cho files phức tạp | O(symbols) |
 
-# Kết hợp với diff mode
-agentlens --check --diff main
-```
+---
 
-Ví dụ GitHub Actions workflow:
+## 🌍 Ngôn Ngữ Hỗ Trợ
 
-```yaml
-name: Check Agentmap
-on: [pull_request]
+| Ngôn ngữ | Symbols | Imports | Memory | Modules |
+|----------|---------|---------|--------|---------|
+| **Rust** | ✅ fn, struct, enum, trait, impl | ✅ | ✅ | `mod.rs` |
+| **Python** | ✅ def, class | ✅ | ✅ | `__init__.py` |
+| **TypeScript/JS** | ✅ function, class, arrow | ✅ | ✅ | `index.{ts,js}` |
+| **PHP** | ✅ function, class, method | ✅ | ✅ | implicit |
+| **Go** | ✅ func, struct, interface | ✅ | ✅ | implicit |
+| **Swift** | ✅ func, class, struct, enum, protocol | ✅ | ✅ | implicit |
+| **Dart** | ✅ function, class, mixin | ✅ | ✅ | implicit |
+| **Ruby** | ✅ def, class, module | ✅ | ✅ | implicit |
+| **C** | ✅ function, struct | ✅ | ✅ | implicit |
+| **C++** | ✅ function, class, struct | ✅ | ✅ | implicit |
+| **C#** | ✅ method, class, struct, interface | ✅ | ✅ | implicit |
+| **Java** | ✅ method, class, interface, enum | ✅ | ✅ | implicit |
 
-jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install agentlens
-        run: cargo install agentlens
-      - name: Check docs freshness
-        run: agentlens --check
-```
+---
 
-## Module Detection
-
-agentlens tự động phát hiện module boundary dựa vào quy ước theo ngôn ngữ:
-
-| Ngôn ngữ | Boundary rõ ràng | Ví dụ |
-|----------|------------------|-------|
-| Rust | `mod.rs`, `lib.rs` | `src/analyze/mod.rs` → module `src-analyze` |
-| Python | `__init__.py` | `src/utils/__init__.py` → module `src-utils` |
-| JavaScript/TypeScript | `index.{js,ts,tsx}` | `src/components/index.ts` → module `src-components` |
-| Any | 5+ source files trong thư mục | `src/helpers/` có 5+ files → implicit module |
-
-### Module Slug Naming
-
-Đường dẫn thư mục được chuyển thành slug bằng dấu gạch ngang:
-- `src/analyze/lang` → `src-analyze-lang`
-- `lib/utils` → `lib-utils`
-
-## Ví Dụ Output
-
-### INDEX.md (L0 Global)
-
-```markdown
-# Project
-
-## Reading Protocol
-
-**Start here**, then navigate to specific modules.
-
-1. Read this INDEX for overview
-2. Go to relevant `modules/{name}/MODULE.md`
-3. Check module's `outline.md` for large files
-4. Check module's `memory.md` for warnings
-
-## Entry Points
-
-- `src/main.rs`
-- `src/lib.rs`
-
-## Modules
-
-| Module | Type | Files | Warnings | Hub |
-| ------ | ---- | ----- | -------- | --- |
-| [src](modules/src/MODULE.md) | rust | 2 | - |  |
-| [src/analyze](modules/src-analyze/MODULE.md) | rust | 5 | ⚠️ 2 |  |
-| [src/generate](modules/src-generate/MODULE.md) | rust | 8 | - | 🔗 |
-```
-
-### MODULE.md (L1 Module)
-
-```markdown
-# Module: src/analyze
-
-[← Back to INDEX](../../INDEX.md)
-
-**Type:** rust | **Files:** 5
-
-**Entry point:** `src/analyze/mod.rs`
-
-## Files
-
-| File | Lines | Large |
-| ---- | ----- | ----- |
-| `src/analyze/graph.rs` | 98 |  |
-| `src/analyze/parser.rs` | 650 | 📄 |
-| `src/analyze/mod.rs` | 10 |  |
-
-## Child Modules
-
-- [src-analyze-lang](../src-analyze-lang/MODULE.md)
-
-## Documentation
-
-- [outline.md](outline.md) - Symbol maps for large files
-- [memory.md](memory.md) - Warnings and TODOs
-- [imports.md](imports.md) - Dependencies
-```
-
-### outline.md (L1 Module-Scoped)
-
-```markdown
-# Outline: src/analyze
-
-[← MODULE.md](MODULE.md) | [← INDEX.md](../../INDEX.md)
-
-## src/analyze/parser.rs (650 lines)
-
-| Line | Kind | Name | Visibility |
-| ---- | ---- | ---- | ---------- |
-| 15 | fn | parse_symbols | pub |
-| 89 | fn | extract_functions | (private) |
-| 156 | struct | ParseResult | pub |
-```
-
-### memory.md (L1 Module-Scoped)
-
-```markdown
-# Memory: src/analyze
-
-[← MODULE.md](MODULE.md) | [← INDEX.md](../../INDEX.md)
-
-## ⚠️ Warnings
-
-### 🔴 `WARNING` (src/analyze/parser.rs:42)
-> Edge case not handled for nested generics
-
-## 🔧 Technical Debt
-
-### 🟡 `TODO` (src/analyze/graph.rs:128)
-> Optimize cycle detection algorithm
-```
-
-## Supported Languages
-
-| Language | Symbol Extraction | Import Graph | Memory Markers | Module Detection |
-|----------|-------------------|--------------|----------------|------------------|
-| Rust | ✅ Functions, structs, enums, traits, impls | ✅ | ✅ | ✅ `mod.rs` |
-| Python | ✅ Functions, classes, methods | ✅ | ✅ | ✅ `__init__.py` |
-| JavaScript/TypeScript | ✅ Functions, classes, arrow functions | ✅ | ✅ | ✅ `index.{js,ts}` |
-| Go | ✅ Functions, structs, interfaces, methods | ✅ | ✅ | ✅ implicit |
-| Swift | ✅ Functions, classes, structs, enums, protocols | ✅ | ✅ | ✅ implicit |
-| Dart | ✅ Functions, classes, mixins, extensions | ✅ | ✅ | ✅ implicit |
-| Ruby | ✅ Methods, classes, modules | ✅ | ✅ | ✅ implicit |
-| C# | ✅ Methods, classes, structs, interfaces | ✅ | ✅ | ✅ implicit |
-| Java | ✅ Methods, classes, interfaces, enums | ✅ | ✅ | ✅ implicit |
-
-## Memory Markers
+## 📝 Memory Markers
 
 agentlens trích xuất các comment patterns sau:
 
@@ -416,52 +236,92 @@ agentlens trích xuất các comment patterns sau:
 | `DEPRECATED` | Technical Debt | High |
 | `NOTE` | Notes | Low |
 
-## Tích Hợp với AI Tools
+---
 
-### Claude Code / Cursor
-
-Thêm vào AI instructions của project:
-
-```
-Trước khi làm việc với codebase này, đọc:
-1. .agentlens/INDEX.md - tổng quan và điều hướng module
-2. Navigate to module's MODULE.md để biết chi tiết
-3. Kiểm tra module's memory.md trước khi edit
-4. Consult module's outline.md để điều hướng file lớn
-```
-
-### GitHub Copilot
-
-Include `.agentlens/` trong workspace context.
-
-### JSON Integration
-
-Cho programmatic access:
+## ⚙️ Cấu Hình
 
 ```bash
-agentlens --json | jq '.modules[] | {slug, file_count, warning_count}'
+agentlens init --config      # Tạo agentlens.toml
 ```
 
-JSON output gồm:
-- `modules[]` - Array module metadata (slug, path, file_count, warning_count, symbol_count, is_hub)
-- `files[]` - Tất cả scanned files và metadata
-- `memory[]` - Tất cả memory markers và locations
-- `entry_points[]` - Detected entry points
-- `hub_files[]` - Files được import bởi 3+ others
+```toml
+output = ".agentlens"
+threshold = 500              # Số dòng cho file "lớn"
+complex_threshold = 1000     # Số symbols cho L2 docs
+ignore = ["*.test.ts", "fixtures/", "__mocks__/"]
 
-## Development
+[watch]
+debounce_ms = 300
+```
+
+### AI Tool Templates
 
 ```bash
-# Chạy tests
-cargo test
-
-# Chạy với verbose output
-cargo run -- -vv .
-
-# Kiểm tra issues
-cargo clippy
+agentlens init --templates              # Tất cả templates
+agentlens init --templates=cursor       # Chỉ .cursorrules
+agentlens init --templates=claude       # Chỉ CLAUDE.md
 ```
 
-## License
+---
 
-MIT License - xem [LICENSE](LICENSE) để biết chi tiết.
+## 🤔 Có Nên Commit `.agentlens/`?
+
+| Team Size | Khuyến nghị |
+|-----------|-------------|
+| **Solo / Nhỏ (1-5)** | ✅ Commit — docs có sẵn khi clone |
+| **Vừa (5-15)** | ❌ Ignore — tránh merge conflicts |
+| **Lớn (15+)** | ❌ Ignore — dùng CI để validate |
+| **Open Source** | ✅ Commit — showcase cho contributors |
+
+Nếu ignore, thêm `.agentlens/` vào `.gitignore` và chạy `agentlens hooks install`.
+
+---
+
+## 🛠️ CLI Reference
+
+```
+Usage: agentlens [OPTIONS] [PATH]
+
+Arguments:
+  [PATH]  Thư mục đích hoặc GitHub URL [default: .]
+
+Options:
+  -o, --output <DIR>         Thư mục output [default: .agentlens]
+  -t, --threshold <N>        Ngưỡng file lớn [default: 500]
+  -c, --complex-threshold    Ngưỡng L2 docs [default: 30]
+  -d, --depth <N>            Max directory depth (0 = unlimited)
+      --diff <REF>           So sánh với git ref
+      --json                 Output JSON ra stdout
+      --check                Kiểm tra docs có stale không
+      --force                Force regenerate tất cả modules
+  -i, --ignore <PATTERN>     Patterns bổ sung để bỏ qua
+  -l, --lang <LANG>          Lọc theo ngôn ngữ
+      --no-gitignore         Không tuân theo .gitignore
+      --dry-run              Xem trước không ghi file
+  -v, --verbose              Tăng mức chi tiết (-v, -vv, -vvv)
+  -q, --quiet                Không hiển thị output
+  -h, --help                 In help
+  -V, --version              In version
+
+Commands:
+  watch   Theo dõi changes và regenerate
+  hooks   Quản lý git hooks
+  init    Khởi tạo cấu hình
+  update  Cập nhật lên phiên bản mới nhất
+```
+
+---
+
+## 📄 License
+
+MIT License — xem [LICENSE](LICENSE)
+
+---
+
+<div align="center">
+
+**Xây dựng cho AI agents. Bởi con người. Tạm thời.**
+
+[GitHub](https://github.com/nguyenphutrong/agentlens) · [npm](https://www.npmjs.com/package/@agentlens/cli) · [Issues](https://github.com/nguyenphutrong/agentlens/issues)
+
+</div>
