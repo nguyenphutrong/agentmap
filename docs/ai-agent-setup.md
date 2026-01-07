@@ -22,6 +22,14 @@ agentlens
 
 Output: `.agentlens/` directory created.
 
+## Step 2.5: Add to .gitignore
+
+```bash
+echo ".agentlens/" >> .gitignore
+```
+
+The `.agentlens/` folder is generated content - regenerate anytime with `agentlens`.
+
 ## Step 3: Read the Docs
 
 Navigate in this order:
