@@ -187,6 +187,69 @@ Installed hooks:
 - **post-checkout**: Regenerates after branch switch (background)
 - **post-merge**: Regenerates after pull/merge (background)
 
+## Best Practices
+
+### Should I commit `.agentmap/`?
+
+| Team Size | Branches | Recommendation |
+|-----------|----------|----------------|
+| Solo / Small (1-5) | Few | **Commit** - docs available immediately on clone |
+| Medium (5-15) | Many | **Ignore** - avoid merge conflicts |
+| Large (15+) | Many | **Ignore** - use CI to validate freshness |
+| Open Source Library | Any | **Commit** - showcase output for contributors |
+
+### Approach A: Commit `.agentmap/` (Small teams / OSS)
+
+Best when you want docs available immediately after `git clone`.
+
+```bash
+# Install hooks to keep docs synced across branches
+agentmap hooks install
+```
+
+Add to `.gitattributes` to reduce merge conflicts:
+
+```gitattributes
+.agentmap/** merge=ours -diff
+```
+
+### Approach B: Ignore `.agentmap/` (Larger teams)
+
+Best when multiple developers work on many branches.
+
+```gitignore
+# .gitignore
+.agentmap/
+```
+
+Each developer runs once after cloning:
+
+```bash
+agentmap hooks install
+```
+
+Docs auto-regenerate on `git checkout`, `git pull`, and `git commit`.
+
+### Approach C: CI-only (Strict freshness)
+
+Generate docs in CI, never commit locally:
+
+```gitignore
+# .gitignore
+.agentmap/
+```
+
+```yaml
+# .github/workflows/docs.yml
+- name: Generate agentmap docs
+  run: agentmap
+- name: Upload as artifact
+  uses: actions/upload-artifact@v4
+  with:
+    name: agentmap-docs
+    path: .agentmap/
+```
+
 ## Configuration File
 
 Create `agentmap.toml` for project-specific settings:
@@ -232,6 +295,25 @@ Supported tools:
 - **OpenCode** (`AGENTS.md`) - Instructions for OpenCode
 
 Templates are **non-destructive**: they append to existing files and skip if agentmap section already exists.
+
+## MCP Server
+
+agentmap can run as an MCP server for AI tools like Claude Desktop and Cursor:
+
+```bash
+agentmap serve --mcp
+```
+
+**Available tools:**
+
+| Tool | Description |
+|------|-------------|
+| `regenerate` | Regenerate documentation |
+| `get_module` | Get module docs by slug |
+| `check_stale` | Check if docs need update |
+| `get_outline` | Get symbol outline for a file |
+
+See [MCP Server Documentation](docs/mcp-server.md) for setup instructions and integration guides.
 
 ## CI Integration
 

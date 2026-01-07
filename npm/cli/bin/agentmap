@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+
+const { runBinary } = require('../lib/index.js');
+
+runBinary(process.argv.slice(2));

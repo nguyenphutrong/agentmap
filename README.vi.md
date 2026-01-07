@@ -213,6 +213,25 @@ debounce_ms = 300
 
 CLI flags ghi đè giá trị config file.
 
+## MCP Server
+
+agentmap có thể chạy như MCP server cho các AI tools như Claude Desktop và Cursor:
+
+```bash
+agentmap serve --mcp
+```
+
+**Các tools có sẵn:**
+
+| Tool | Mô tả |
+|------|-------|
+| `regenerate` | Regenerate tài liệu |
+| `get_module` | Lấy docs module theo slug |
+| `check_stale` | Kiểm tra docs có cần cập nhật |
+| `get_outline` | Lấy symbol outline cho file |
+
+Xem [MCP Server Documentation](docs/mcp-server.vi.md) để biết hướng dẫn cài đặt và tích hợp.
+
 ## CI Integration
 
 Validate docs freshness trong CI pipelines:

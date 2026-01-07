@@ -1,0 +1,53 @@
+{
+  "name": "agentmap-cli",
+  "version": "0.4.0",
+  "description": "Prepare codebases for AI agents by generating hierarchical documentation",
+  "keywords": [
+    "ai",
+    "agents",
+    "code-analysis",
+    "documentation",
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "cursor",
+    "opencode"
+  ],
+  "author": "Trong Nguyen <nguyenphutrong.dev@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nguyenphutrong/agentmap.git"
+  },
+  "homepage": "https://github.com/nguyenphutrong/agentmap#readme",
+  "bugs": {
+    "url": "https://github.com/nguyenphutrong/agentmap/issues"
+  },
+  "bin": {
+    "agentmap": "./bin/agentmap"
+  },
+  "main": "./lib/index.js",
+  "files": [
+    "bin",
+    "lib",
+    "scripts"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/postinstall.js"
+  },
+  "dependencies": {
+    "tar": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ]
+}
