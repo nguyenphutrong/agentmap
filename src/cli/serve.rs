@@ -3,7 +3,7 @@ use rmcp::{transport::stdio, ServiceExt};
 use std::path::Path;
 
 use crate::cli::Args;
-use crate::mcp::AgentmapServer;
+use crate::mcp::AgentlensServer;
 
 pub async fn run_mcp_server(args: &Args, work_path: &Path) -> Result<()> {
     let output_path = if args.output.is_absolute() {
@@ -12,7 +12,7 @@ pub async fn run_mcp_server(args: &Args, work_path: &Path) -> Result<()> {
         work_path.join(&args.output)
     };
 
-    let server = AgentmapServer::new(work_path.to_path_buf(), output_path, args.clone());
+    let server = AgentlensServer::new(work_path.to_path_buf(), output_path, args.clone());
 
     eprintln!("Starting agentlens MCP server (stdio)...");
     eprintln!("Work path: {}", work_path.display());
@@ -34,7 +34,7 @@ pub async fn run_mcp_http_server(args: &Args, work_path: &Path, port: u16) -> Re
         work_path.join(&args.output)
     };
 
-    let _server = AgentmapServer::new(work_path.to_path_buf(), output_path, args.clone());
+    let _server = AgentlensServer::new(work_path.to_path_buf(), output_path, args.clone());
 
     eprintln!(
         "Starting agentlens MCP server (HTTP/SSE on port {})...",

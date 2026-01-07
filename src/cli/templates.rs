@@ -4,8 +4,8 @@ use std::path::Path;
 
 use crate::generate::{generate_template, parse_template_types, TemplateConfig, TemplateType};
 
-const AGENTLENS_MARKER: &str = "# Agentmap Integration";
-const AGENTLENS_MARKER_ALT: &str = "## Agentmap Documentation";
+const AGENTLENS_MARKER: &str = "# Agentlens Integration";
+const AGENTLENS_MARKER_ALT: &str = "## Agentlens Documentation";
 
 pub fn run_templates(
     path: &Path,
@@ -123,12 +123,12 @@ mod tests {
 
         fs::write(&file_path, "# Existing rules\n\nSome content").unwrap();
 
-        let result = write_template_file(&file_path, "# Agentmap Integration\n\nNew content");
+        let result = write_template_file(&file_path, "# Agentlens Integration\n\nNew content");
 
         assert!(matches!(result, TemplateWriteResult::Appended));
         let content = fs::read_to_string(&file_path).unwrap();
         assert!(content.contains("# Existing rules"));
-        assert!(content.contains("# Agentmap Integration"));
+        assert!(content.contains("# Agentlens Integration"));
     }
 
     #[test]
@@ -138,11 +138,11 @@ mod tests {
 
         fs::write(
             &file_path,
-            "# Existing\n\n# Agentmap Integration\n\nAlready here",
+            "# Existing\n\n# Agentlens Integration\n\nAlready here",
         )
         .unwrap();
 
-        let result = write_template_file(&file_path, "# Agentmap Integration\n\nDuplicate");
+        let result = write_template_file(&file_path, "# Agentlens Integration\n\nDuplicate");
 
         assert!(matches!(result, TemplateWriteResult::Skipped(_)));
     }
@@ -154,11 +154,11 @@ mod tests {
 
         fs::write(
             &file_path,
-            "# Project\n\n## Agentmap Documentation\n\nAlready here",
+            "# Project\n\n## Agentlens Documentation\n\nAlready here",
         )
         .unwrap();
 
-        let result = write_template_file(&file_path, "## Agentmap Documentation\n\nDuplicate");
+        let result = write_template_file(&file_path, "## Agentlens Documentation\n\nDuplicate");
 
         assert!(matches!(result, TemplateWriteResult::Skipped(_)));
     }

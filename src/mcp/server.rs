@@ -35,7 +35,7 @@ pub struct GetOutlineParams {
 }
 
 #[derive(Clone)]
-pub struct AgentmapServer {
+pub struct AgentlensServer {
     work_path: Arc<PathBuf>,
     output_path: Arc<PathBuf>,
     args: Arc<RwLock<Args>>,
@@ -43,7 +43,7 @@ pub struct AgentmapServer {
 }
 
 #[tool_router]
-impl AgentmapServer {
+impl AgentlensServer {
     pub fn new(work_path: PathBuf, output_path: PathBuf, args: Args) -> Self {
         Self {
             work_path: Arc::new(work_path),
@@ -216,7 +216,7 @@ fn format_symbols_as_outline(file_path: &str, symbols: &[Symbol]) -> String {
 }
 
 #[tool_handler]
-impl ServerHandler for AgentmapServer {
+impl ServerHandler for AgentlensServer {
     fn get_info(&self) -> ServerInfo {
         ServerInfo {
             capabilities: ServerCapabilities::builder()
@@ -229,7 +229,7 @@ impl ServerHandler for AgentmapServer {
                 ..Default::default()
             },
             instructions: Some(
-                "Agentmap MCP server - query and regenerate codebase documentation".to_string(),
+                "Agentlens MCP server - query and regenerate codebase documentation".to_string(),
             ),
             ..Default::default()
         }

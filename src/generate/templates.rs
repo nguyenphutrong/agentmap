@@ -78,7 +78,7 @@ fn generate_unified_template(config: &TemplateConfig) -> String {
         .unwrap_or_default();
 
     format!(
-        r#"{project_header}# Agentmap Integration
+        r#"{project_header}# Agentlens Integration
 
 This project uses **agentlens** for AI-optimized documentation.
 
@@ -224,7 +224,7 @@ mod tests {
         assert_eq!(cursor, claude);
         assert_eq!(claude, opencode);
 
-        assert!(cursor.contains("# Agentmap Integration"));
+        assert!(cursor.contains("# Agentlens Integration"));
         assert!(cursor.contains(".agentlens/INDEX.md"));
         assert!(cursor.contains(".agentlens/AGENT.md"));
         assert!(cursor.contains("## Reading Protocol"));
