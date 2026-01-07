@@ -46,7 +46,23 @@ AI coding assistants struggle with large codebases because they can't see the fu
 
 ## Installation
 
-### Quick Install (Recommended)
+### Homebrew (macOS) — Recommended
+
+```bash
+brew install trongnguyen24/tap/agentmap
+```
+
+### npm / pnpm / yarn / bun
+
+```bash
+npx agentmap-cli            # Run without install
+npm install -g agentmap-cli
+pnpm add -g agentmap-cli
+yarn global add agentmap-cli
+bun add -g agentmap-cli
+```
+
+### Quick Install Script
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nguyenphutrong/agentmap/main/scripts/install.sh | sh
