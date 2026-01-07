@@ -47,6 +47,11 @@ schemars = "1.2"
 tiktoken-rs = "0.9"
 uuid = { version = "1", features = ["v4"] }
 
+# Interactive TUI
+inquire = "0.7"
+indicatif = "0.17"
+console = "0.15"
+
 [dev-dependencies]
 tempfile = "3"
 assert_cmd = "2"

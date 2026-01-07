@@ -27,6 +27,9 @@ pub enum Command {
         /// Generate AI tool templates (cursor, claude, opencode, or all)
         #[arg(long, value_name = "TOOLS")]
         templates: Option<Option<String>>,
+        /// Skip interactive mode, use defaults
+        #[arg(long, short = 'y')]
+        yes: bool,
     },
     /// Start MCP server for AI tool integration
     Serve {

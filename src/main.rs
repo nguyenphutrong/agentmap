@@ -8,9 +8,10 @@ use agentlens::analyze::{
     detect_modules, extract_imports, extract_memory_markers, extract_symbols, FileGraph, ModuleInfo,
 };
 use agentlens::cli::{
-    install_hooks_with_manager, remove_hooks, run_check, run_mcp_http_server, run_mcp_server,
-    run_telemetry_all_modules, run_telemetry_module, run_templates, run_update, run_watch, Args,
-    Command, HooksAction, TelemetryAction,
+    execute_setup, install_hooks_with_manager, is_interactive, remove_hooks, run_check,
+    run_interactive_init, run_mcp_http_server, run_mcp_server, run_telemetry_all_modules,
+    run_telemetry_module, run_templates, run_update, run_watch, Args, Command, HooksAction,
+    TelemetryAction,
 };
 use agentlens::emit::{
     calculate_module_state, current_timestamp, write_hierarchical, CriticalFile, DiffInfo,
@@ -53,9 +54,18 @@ fn main() -> Result<()> {
             config,
             hooks,
             templates,
+            yes,
         }) => {
             let path = args.path.canonicalize().unwrap_or(args.path.clone());
-            return run_init(&path, config, hooks, templates, &args.output);
+            let output_str = args.output.to_string_lossy().to_string();
+            let has_flags = config || hooks || templates.is_some();
+
+            if has_flags || yes || !is_interactive() {
+                return run_init(&path, config, hooks, templates, &args.output);
+            } else {
+                let options = run_interactive_init(&path)?;
+                return execute_setup(&options, &path, &output_str);
+            }
         }
         Some(Command::Serve { mcp, port }) => {
             if !mcp && port.is_none() {
