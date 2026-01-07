@@ -7,7 +7,11 @@ use crate::generate::{generate_template, parse_template_types, TemplateConfig, T
 const AGENTLENS_MARKER: &str = "# Agentmap Integration";
 const AGENTLENS_MARKER_ALT: &str = "## Agentmap Documentation";
 
-pub fn run_templates(path: &Path, templates_arg: Option<String>, agentlens_dir: &str) -> Result<()> {
+pub fn run_templates(
+    path: &Path,
+    templates_arg: Option<String>,
+    agentlens_dir: &str,
+) -> Result<()> {
     let template_types = match templates_arg {
         Some(ref s) if !s.is_empty() => parse_template_types(s)
             .ok_or_else(|| anyhow::anyhow!("Invalid template type(s): {}", s))?,

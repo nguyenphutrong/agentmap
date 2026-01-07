@@ -242,7 +242,7 @@ impl ServerHandler for AgentmapServer {
     ) -> Result<ListResourcesResult, McpError> {
         Ok(ListResourcesResult {
             resources: vec![
-                RawResource::new("agentlens://index", "INDEX.md".to_string()).no_annotation()
+                RawResource::new("agentlens://index", "INDEX.md".to_string()).no_annotation(),
             ],
             ..Default::default()
         })
