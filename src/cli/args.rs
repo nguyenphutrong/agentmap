@@ -37,6 +37,11 @@ pub enum Command {
         #[arg(long, value_name = "PORT")]
         port: Option<u16>,
     },
+    /// Analyze token usage and efficiency of generated docs
+    Telemetry {
+        #[command(subcommand)]
+        action: TelemetryAction,
+    },
 }
 
 #[derive(Subcommand, Debug, Clone)]
@@ -58,6 +63,17 @@ pub enum HooksAction {
     },
     /// Remove git hooks
     Remove,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub enum TelemetryAction {
+    /// Show token usage summary for generated docs
+    Summary,
+    /// Analyze a specific module's token cost
+    Module {
+        #[arg(value_name = "SLUG")]
+        slug: String,
+    },
 }
 
 #[derive(Parser, Debug, Clone)]

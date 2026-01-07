@@ -1,0 +1,153 @@
+{
+  "quiz_version": "1.0",
+  "codebase": "agentlens",
+  "description": "Navigation accuracy quiz for AI agents using agentlens documentation",
+  "questions": [
+    {
+      "id": "q01",
+      "question": "Which file contains the logic for detecting modules (mod.rs, __init__.py, index.ts)?",
+      "expected_file": "src/analyze/module.rs",
+      "expected_module": "src-analyze",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q02",
+      "question": "What struct stores metadata about a detected module?",
+      "expected_file": "src/analyze/module.rs",
+      "expected_symbol": "ModuleInfo",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q03",
+      "question": "Which file parses Python source code to extract symbols?",
+      "expected_file": "src/analyze/lang/python.rs",
+      "expected_module": "src-analyze-lang",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q04",
+      "question": "What is the default line threshold for 'large' files?",
+      "expected_answer": "500",
+      "expected_file": "src/cli/args.rs",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q05",
+      "question": "Which file contains the MCP server implementation?",
+      "expected_file": "src/mcp/server.rs",
+      "expected_module": "src-mcp",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q06",
+      "question": "What MCP tool returns documentation for a specific module?",
+      "expected_file": "src/mcp/server.rs",
+      "expected_symbol": "get_module",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q07",
+      "question": "Which file tracks imports between files to identify Hub Files?",
+      "expected_file": "src/analyze/graph.rs",
+      "expected_symbol": "FileGraph",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q08",
+      "question": "How many importers are needed for a file to be considered a Hub File?",
+      "expected_answer": "3",
+      "expected_file": "src/analyze/graph.rs",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q09",
+      "question": "Which file generates INDEX.md?",
+      "expected_file": "src/generate/index.rs",
+      "expected_module": "src-generate",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q10",
+      "question": "Which file handles incremental updates using a manifest?",
+      "expected_file": "src/emit/manifest.rs",
+      "expected_symbol": "Manifest",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q11",
+      "question": "Which file extracts TODO, FIXME, WARNING comments?",
+      "expected_file": "src/analyze/memory.rs",
+      "expected_symbol": "extract_memory_markers",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q12",
+      "question": "Which file parses Rust source code for symbols?",
+      "expected_file": "src/analyze/lang/rust.rs",
+      "expected_module": "src-analyze-lang",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q13",
+      "question": "Where are CLI arguments defined?",
+      "expected_file": "src/cli/args.rs",
+      "expected_module": "src-cli",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q14",
+      "question": "Which file handles git hooks installation?",
+      "expected_file": "src/cli/hooks.rs",
+      "expected_module": "src-cli",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q15",
+      "question": "What function orchestrates the entire analysis pipeline?",
+      "expected_file": "src/runner.rs",
+      "expected_symbol": "run_analysis",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q16",
+      "question": "Which file clones remote GitHub repositories?",
+      "expected_file": "src/scan/remote.rs",
+      "expected_module": "src-scan",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q17",
+      "question": "Which file generates the AGENT.md template?",
+      "expected_file": "src/generate/agent.rs",
+      "expected_module": "src-generate",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q18",
+      "question": "What struct represents a code symbol (function, class, etc)?",
+      "expected_file": "src/types/symbol.rs",
+      "expected_symbol": "Symbol",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q19",
+      "question": "Which file handles watch mode for auto-regeneration?",
+      "expected_file": "src/cli/watch.rs",
+      "expected_module": "src-cli",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q20",
+      "question": "How many files in a directory are needed for it to be considered an implicit module?",
+      "expected_answer": "5",
+      "expected_file": "src/analyze/module.rs",
+      "difficulty": "hard"
+    }
+  ],
+  "scoring": {
+    "correct_file": 1,
+    "correct_module": 0.5,
+    "correct_symbol": 0.5,
+    "correct_answer": 1
+  }
+}

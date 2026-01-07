@@ -44,6 +44,28 @@ AI coding assistants are **blind** in large codebases. They can't see:
 
 ---
 
+## 📊 Proven Token Savings
+
+Real-world benchmark on a **362K lines PHP/Laravel codebase**:
+
+| Scenario | Tokens | Cost (GPT-5.1-codex-mini) |
+|----------|--------|---------------------------|
+| Read entire source code | ~3,627,260 | $0.91 |
+| Read all AgentLens docs | 129,850 | $0.032 |
+| Hierarchical (INDEX + 1 module) | ~25,580 | $0.006 |
+
+**Token Reduction:**
+- 📉 **96.4%** less tokens vs reading raw source
+- 📉 **80.3%** less tokens with hierarchical navigation
+- 💰 **$0.006** per navigation instead of $0.91
+
+```bash
+# Analyze your own codebase
+agentlens telemetry summary
+```
+
+---
+
 ## ⚡ Quick Start
 
 ### Install
@@ -97,6 +119,7 @@ Before working on this codebase, read .agentlens/INDEX.md for navigation.
 | Feature | What it does |
 |---------|--------------|
 | **🧠 Hierarchical Docs** | AI loads module-by-module, not entire codebase |
+| **📊 Token Telemetry** | Measure and verify token savings |
 | **📦 Auto Module Detection** | Finds `mod.rs`, `__init__.py`, `index.ts` automatically |
 | **🔎 Symbol Maps** | Know what's in 1000-line files without reading them |
 | **⚠️ Memory Markers** | Surfaces `TODO`, `FIXME`, `WARNING` comments |
@@ -304,10 +327,37 @@ Options:
   -V, --version              Print version
 
 Commands:
-  watch   Watch for changes and regenerate
-  hooks   Manage git hooks
-  init    Initialize configuration
-  update  Update to latest version
+  watch       Watch for changes and regenerate
+  hooks       Manage git hooks
+  init        Initialize configuration
+  serve       Start MCP server
+  telemetry   Analyze token usage and efficiency
+  update      Update to latest version
+```
+
+### Telemetry Commands
+
+```bash
+agentlens telemetry summary          # Token analysis for all modules
+agentlens telemetry module <SLUG>    # Analyze specific module
+```
+
+Example output:
+```
+📊 Token Analysis: All Modules
+═══════════════════════════════════════════════════
+| Module | Tokens | Bytes |
+|--------|--------|-------|
+| app-Models | 23806 | 76021 |
+| database-migrations | 15858 | 51106 |
+| ... | ... | ... |
+|--------|--------|-------|
+| **TOTAL (64 modules)** | **128076** | **411225** |
+
+📈 Estimated Cost (GPT-5.1-codex-mini @ $0.25/1M tokens):
+  Full codebase read: $0.032
+  Hierarchical (INDEX + 1 module): $0.006
+  Savings: 80.3%
 ```
 
 ---

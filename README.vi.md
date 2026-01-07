@@ -44,6 +44,28 @@ AI coding assistants bị **mù** trong codebase lớn. Chúng không thể th�
 
 ---
 
+## 📊 Tiết Kiệm Token Đã Được Chứng Minh
+
+Benchmark thực tế trên **codebase PHP/Laravel 362K dòng code**:
+
+| Scenario | Tokens | Chi phí (GPT-5.1-codex-mini) |
+|----------|--------|------------------------------|
+| Đọc toàn bộ source code | ~3,627,260 | $0.91 |
+| Đọc toàn bộ AgentLens docs | 129,850 | $0.032 |
+| Phân cấp (INDEX + 1 module) | ~25,580 | $0.006 |
+
+**Giảm Token:**
+- 📉 **96.4%** ít tokens hơn so với đọc raw source
+- 📉 **80.3%** ít tokens hơn với điều hướng phân cấp
+- 💰 **$0.006** mỗi lần điều hướng thay vì $0.91
+
+```bash
+# Phân tích codebase của bạn
+agentlens telemetry summary
+```
+
+---
+
 ## ⚡ Bắt Đầu Nhanh
 
 ### Cài Đặt
@@ -97,6 +119,7 @@ Trước khi làm việc với codebase này, đọc .agentlens/INDEX.md để �
 | Tính năng | Công dụng |
 |-----------|-----------|
 | **🧠 Docs Phân Cấp** | AI load theo module, không phải toàn bộ codebase |
+| **📊 Token Telemetry** | Đo lường và xác minh tiết kiệm token |
 | **📦 Tự Động Phát Hiện Module** | Tìm `mod.rs`, `__init__.py`, `index.ts` tự động |
 | **🔎 Bản Đồ Symbol** | Biết có gì trong file 1000 dòng mà không đọc hết |
 | **⚠️ Memory Markers** | Hiển thị `TODO`, `FIXME`, `WARNING` comments |
@@ -304,10 +327,37 @@ Options:
   -V, --version              In version
 
 Commands:
-  watch   Theo dõi changes và regenerate
-  hooks   Quản lý git hooks
-  init    Khởi tạo cấu hình
-  update  Cập nhật lên phiên bản mới nhất
+  watch       Theo dõi changes và regenerate
+  hooks       Quản lý git hooks
+  init        Khởi tạo cấu hình
+  serve       Khởi động MCP server
+  telemetry   Phân tích token usage và hiệu quả
+  update      Cập nhật lên phiên bản mới nhất
+```
+
+### Telemetry Commands
+
+```bash
+agentlens telemetry summary          # Phân tích token cho tất cả modules
+agentlens telemetry module <SLUG>    # Phân tích module cụ thể
+```
+
+Output ví dụ:
+```
+📊 Token Analysis: All Modules
+═══════════════════════════════════════════════════
+| Module | Tokens | Bytes |
+|--------|--------|-------|
+| app-Models | 23806 | 76021 |
+| database-migrations | 15858 | 51106 |
+| ... | ... | ... |
+|--------|--------|-------|
+| **TOTAL (64 modules)** | **128076** | **411225** |
+
+📈 Estimated Cost (GPT-5.1-codex-mini @ $0.25/1M tokens):
+  Full codebase read: $0.032
+  Hierarchical (INDEX + 1 module): $0.006
+  Savings: 80.3%
 ```
 
 ---

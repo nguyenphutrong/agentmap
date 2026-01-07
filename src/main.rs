@@ -9,7 +9,8 @@ use agentlens::analyze::{
 };
 use agentlens::cli::{
     install_hooks_with_manager, remove_hooks, run_check, run_mcp_http_server, run_mcp_server,
-    run_templates, run_update, run_watch, Args, Command, HooksAction,
+    run_telemetry_all_modules, run_telemetry_module, run_templates, run_update, run_watch, Args,
+    Command, HooksAction, TelemetryAction,
 };
 use agentlens::emit::{
     calculate_module_state, current_timestamp, write_hierarchical, CriticalFile, DiffInfo,
@@ -73,6 +74,19 @@ fn main() -> Result<()> {
                     run_mcp_server(&args, &work_path).await
                 }
             });
+        }
+        Some(Command::Telemetry { action }) => {
+            let args = args.with_config();
+            let work_path = args.path.canonicalize().unwrap_or(args.path.clone());
+            let output_path = if args.output.is_absolute() {
+                args.output.clone()
+            } else {
+                work_path.join(&args.output)
+            };
+            return match action {
+                TelemetryAction::Summary => run_telemetry_all_modules(&output_path),
+                TelemetryAction::Module { slug } => run_telemetry_module(&output_path, &slug),
+            };
         }
         None => {}
     }

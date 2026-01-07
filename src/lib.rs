@@ -6,6 +6,7 @@ pub mod generate;
 pub mod mcp;
 pub mod runner;
 pub mod scan;
+pub mod telemetry;
 pub mod types;
 
 pub use cli::Args;
