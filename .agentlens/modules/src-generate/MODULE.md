@@ -13,37 +13,15 @@
 | `src/generate/agent.rs` | 372 |  |
 | `src/generate/file_doc.rs` | 239 |  |
 | `src/generate/imports.rs` | 74 |  |
-| `src/generate/index.rs` | 328 |  |
+| `src/generate/index.rs` | 387 |  |
 | `src/generate/memory.rs` | 177 |  |
 | `src/generate/mod.rs` | 20 |  |
-| `src/generate/module_content.rs` | 530 | 📊 |
+| `src/generate/module_content.rs` | 582 | 📊 |
 | `src/generate/outline.rs` | 71 |  |
 | `src/generate/templates.rs` | 249 |  |
 
 ## Documentation
 
 - [outline.md](outline.md) - Symbol maps for large files
+- [imports.md](imports.md) - Dependencies
 
----
-
-Dependencies within this module:
-
-- `agent`
-- `file_doc`
-- `imports`
-- `index`
-- `memory`
-- `module_content`
-- `outline`
-- `templates`
-
-## External Dependencies
-
-Dependencies from other modules:
-
-- `analyze`
-- `chrono`
-- `emit`
-- `std`
-- `super`
-- `types`

@@ -1,29 +1,49 @@
 {
   "version": "0.5.0",
-  "generated_at": 1767779818,
+  "generated_at": 1767862981,
   "modules": {
-    "src-mcp": {
-      "latest_mtime": 1767776843,
-      "file_count": 2,
-      "files_hash": 8972789471092479845
-    },
-    "npm-cli-lib": {
-      "latest_mtime": 1767761282,
-      "file_count": 1,
-      "files_hash": 12690077599768872509
-    },
-    "src-telemetry": {
-      "latest_mtime": 1767778928,
-      "file_count": 4,
-      "files_hash": 2781733274119236478
+    "src-cli-tui": {
+      "latest_mtime": 1767796614,
+      "file_count": 3,
+      "files_hash": 10849539058115220304
     },
     "src-emit": {
       "latest_mtime": 1767761207,
       "file_count": 4,
       "files_hash": 4518580010369768925
     },
+    "src-scan": {
+      "latest_mtime": 1767761207,
+      "file_count": 5,
+      "files_hash": 15111640761281338415
+    },
+    "src-telemetry": {
+      "latest_mtime": 1767778928,
+      "file_count": 4,
+      "files_hash": 2781733274119236478
+    },
+    "npm-cli-lib": {
+      "latest_mtime": 1767761282,
+      "file_count": 1,
+      "files_hash": 12690077599768872509
+    },
+    "src": {
+      "latest_mtime": 1767862925,
+      "file_count": 4,
+      "files_hash": 4681910572758427132
+    },
+    "src-generate": {
+      "latest_mtime": 1767862895,
+      "file_count": 9,
+      "files_hash": 12579124932500831409
+    },
+    "src-mcp": {
+      "latest_mtime": 1767776843,
+      "file_count": 2,
+      "files_hash": 8972789471092479845
+    },
     "src-cli": {
-      "latest_mtime": 1767779298,
+      "latest_mtime": 1767796483,
       "file_count": 9,
       "files_hash": 17073670457861262617
     },
@@ -32,30 +52,15 @@
       "file_count": 4,
       "files_hash": 11790852967198125874
     },
-    "src-scan": {
-      "latest_mtime": 1767761207,
+    "src-analyze": {
+      "latest_mtime": 1767691798,
       "file_count": 5,
-      "files_hash": 15111640761281338415
-    },
-    "src": {
-      "latest_mtime": 1767779260,
-      "file_count": 4,
-      "files_hash": 4681910572758427132
-    },
-    "src-generate": {
-      "latest_mtime": 1767776778,
-      "file_count": 9,
-      "files_hash": 12579124932500831409
+      "files_hash": 574728628975473698
     },
     "src-analyze-lang": {
       "latest_mtime": 1767702811,
       "file_count": 13,
       "files_hash": 14406266209587732767
-    },
-    "src-analyze": {
-      "latest_mtime": 1767691798,
-      "file_count": 5,
-      "files_hash": 574728628975473698
     }
   }
 }

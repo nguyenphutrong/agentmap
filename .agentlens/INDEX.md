@@ -24,6 +24,7 @@
 | [src/analyze](modules/src-analyze/MODULE.md) | rust | 5 | - |  |
 | [src/analyze/lang](modules/src-analyze-lang/MODULE.md) | rust | 13 | - |  |
 | [src/cli](modules/src-cli/MODULE.md) | rust | 9 | - |  |
+| [src/cli/tui](modules/src-cli-tui/MODULE.md) | rust | 3 | - |  |
 | [src/emit](modules/src-emit/MODULE.md) | rust | 4 | - |  |
 | [src/generate](modules/src-generate/MODULE.md) | rust | 9 | - |  |
 | [src/mcp](modules/src-mcp/MODULE.md) | rust | 2 | - |  |

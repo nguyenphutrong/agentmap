@@ -24,28 +24,7 @@
 | `src/analyze/lang/rust.rs` | 220 |  |
 | `src/analyze/lang/swift.rs` | 244 |  |
 
----
+## Documentation
 
-Dependencies within this module:
+- [imports.md](imports.md) - Dependencies
 
-- `analyze`
-- `c`
-- `cpp`
-- `csharp`
-- `dart`
-- `go`
-- `java`
-- `javascript`
-- `php`
-- `python`
-- `ruby`
-- `rust`
-- `swift`
-
-## External Dependencies
-
-Dependencies from other modules:
-
-- `once_cell`
-- `regex`
-- `types`

@@ -15,21 +15,7 @@
 | `src/telemetry/mod.rs` | 76 |  |
 | `src/telemetry/storage.rs` | 137 |  |
 
----
+## Documentation
 
-Dependencies within this module:
+- [imports.md](imports.md) - Dependencies
 
-- `counter`
-- `event`
-- `storage`
-
-## External Dependencies
-
-Dependencies from other modules:
-
-- `chrono`
-- `serde`
-- `std`
-- `super`
-- `tiktoken_rs`
-- `tokio`

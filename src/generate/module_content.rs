@@ -341,6 +341,40 @@ fn generate_module_imports(module: &ModuleInfo, graph: &FileGraph) -> String {
         return output;
     }
 
+    // Generate Mermaid diagram if there are dependencies
+    if !external_deps.is_empty() || !consumers.is_empty() {
+        output.push_str("## Dependency Graph\n\n");
+        output.push_str("```mermaid\ngraph TD\n");
+
+        let module_id = sanitize_mermaid_id(&module.slug);
+
+        // Show external dependencies (this module depends on them)
+        for dep in &external_deps {
+            let dep_id = sanitize_mermaid_id(&path_to_module_name(dep));
+            output.push_str(&format!(
+                "    {}[{}] --> {}[{}]\n",
+                module_id,
+                module.slug,
+                dep_id,
+                path_to_module_name(dep)
+            ));
+        }
+
+        // Show consumers (they depend on this module)
+        for consumer in &consumers {
+            let consumer_id = sanitize_mermaid_id(&path_to_module_name(consumer));
+            output.push_str(&format!(
+                "    {}[{}] --> {}[{}]\n",
+                consumer_id,
+                path_to_module_name(consumer),
+                module_id,
+                module.slug
+            ));
+        }
+
+        output.push_str("```\n\n");
+    }
+
     if !internal_deps.is_empty() {
         output.push_str("## Internal Dependencies\n\n");
         output.push_str("Dependencies within this module:\n\n");
@@ -369,6 +403,24 @@ fn generate_module_imports(module: &ModuleInfo, graph: &FileGraph) -> String {
     }
 
     output
+}
+
+/// Sanitize a string to be a valid Mermaid node ID
+fn sanitize_mermaid_id(s: &str) -> String {
+    s.chars()
+        .map(|c| if c.is_alphanumeric() { c } else { '_' })
+        .collect()
+}
+
+/// Extract module name from file path
+fn path_to_module_name(path: &str) -> String {
+    // Try to extract the parent directory name as module
+    let parts: Vec<&str> = path.split('/').collect();
+    if parts.len() >= 2 {
+        parts[parts.len() - 2].to_string()
+    } else {
+        path.to_string()
+    }
 }
 
 #[cfg(test)]

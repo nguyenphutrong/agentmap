@@ -218,6 +218,7 @@ fn run_hierarchical_output(
         entry_points,
         hub_modules: &hub_module_slugs,
         project_name: None,
+        file_graph: Some(file_graph),
     };
     let index_md = generate_index_md(&index_config);
     let mut output = HierarchicalOutput::new(index_md);

@@ -20,24 +20,7 @@
 
 - [src-analyze-lang](../src-analyze-lang/MODULE.md)
 
----
+## Documentation
 
-Dependencies within this module:
+- [imports.md](imports.md) - Dependencies
 
-- `analyze`
-- `graph`
-- `memory`
-- `module`
-- `parser`
-
-## External Dependencies
-
-Dependencies from other modules:
-
-- `lang`
-- `once_cell`
-- `regex`
-- `serde`
-- `std`
-- `super`
-- `types`

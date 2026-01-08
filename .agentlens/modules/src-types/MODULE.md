@@ -17,6 +17,14 @@
 
 ---
 
+```mermaid
+graph TD
+    src_types[src-types] --> serde[serde]
+    src_types[src-types] --> std[std]
+```
+
+## Internal Dependencies
+
 Dependencies within this module:
 
 - `file`

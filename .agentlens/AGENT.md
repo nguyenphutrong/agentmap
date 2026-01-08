@@ -26,8 +26,8 @@ Follow this protocol to understand the codebase efficiently:
 
 ## Freshness Check
 
-**Generated:** 2026-01-07T09:56:58Z
-**Git HEAD:** `e8bbfdc`
+**Generated:** 2026-01-08T09:03:01Z
+**Git HEAD:** `1eaff95`
 
 ### How to verify freshness
 
@@ -44,6 +44,7 @@ Follow this protocol to understand the codebase efficiently:
 | `src/analyze` | 5 | rust | Analysis/parsing logic |
 | `src/analyze/lang` | 13 | rust | Language-specific handlers |
 | `src/cli` | 9 | rust | Command-line interface |
+| `src/cli/tui` | 3 | rust | Module |
 | `src/emit` | 4 | rust | Output/emission logic |
 | `src/generate` | 9 | rust | Generation logic |
 | `src/mcp` | 2 | rust | Module |

@@ -13,23 +13,7 @@
 | `src/mcp/mod.rs` | 3 |  |
 | `src/mcp/server.rs` | 275 |  |
 
----
+## Documentation
 
-Dependencies within this module:
+- [imports.md](imports.md) - Dependencies
 
-- `server`
-
-## External Dependencies
-
-Dependencies from other modules:
-
-- `analyze`
-- `cli`
-- `rmcp`
-- `scan`
-- `schemars`
-- `serde`
-- `serde_json`
-- `std`
-- `tokio`
-- `types`

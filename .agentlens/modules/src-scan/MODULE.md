@@ -16,22 +16,7 @@
 | `src/scan/remote.rs` | 86 |  |
 | `src/scan/walker.rs` | 128 |  |
 
----
+## Documentation
 
-Dependencies within this module:
+- [imports.md](imports.md) - Dependencies
 
-- `filter`
-- `git`
-- `remote`
-- `walker`
-
-## External Dependencies
-
-Dependencies from other modules:
-
-- `anyhow`
-- `ignore`
-- `serde`
-- `std`
-- `super`
-- `types`

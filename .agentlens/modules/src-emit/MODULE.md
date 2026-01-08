@@ -15,23 +15,7 @@
 | `src/emit/mod.rs` | 9 |  |
 | `src/emit/writer.rs` | 240 |  |
 
----
+## Documentation
 
-Dependencies within this module:
+- [imports.md](imports.md) - Dependencies
 
-- `json`
-- `manifest`
-- `writer`
-
-## External Dependencies
-
-Dependencies from other modules:
-
-- `analyze`
-- `anyhow`
-- `chrono`
-- `scan`
-- `serde`
-- `std`
-- `super`
-- `types`
